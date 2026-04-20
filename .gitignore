@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Next.js
+.next/
+out/
+
+# Turbo
+.turbo
+
+# Logs
+*.log
+*_output.txt
+wallet_errors_final_final.txt
+api_crash*.log
+api_error*.log
+
+# Sensitive data
+token.txt
+users.json
+users_dump.json
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

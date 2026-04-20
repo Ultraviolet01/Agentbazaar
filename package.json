@@ -1,0 +1,20 @@
+{
+  "name": "agentbazaar",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:push": "pnpm --filter database push",
+    "db:generate": "pnpm --filter database generate"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "turbo": "latest",
+    "typescript": "^6.0.2"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

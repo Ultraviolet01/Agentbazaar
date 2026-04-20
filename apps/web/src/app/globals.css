@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11.2%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 24.6 95% 53.1%;
+    --radius: 12px;
+
+    /* New Light Colors - Premium Marketplace */
+    --background-primary: #ffffff;
+    --background-secondary: #f8f9fa;
+    --background-card: #ffffff;
+    --background-hover: #f1f3f5;
+
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+
+    --border-subtle: #e5e7eb;
+    --border-medium: #d1d5db;
+    --border-strong: #9ca3af;
+
+    --button-primary: #f97316;
+    --button-primary-hover: #ea580c;
+    --button-secondary: #ffffff;
+    --button-secondary-border: #e5e7eb;
+    --button-secondary-hover: #f9fafb;
+
+    --accent-green: #10b981;
+    --accent-green-bg: #d1fae5;
+    --accent-orange: #f97316;
+    --accent-orange-bg: #fed7aa;
+    --accent-blue: #3b82f6;
+    --accent-blue-bg: #dbeafe;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.sidebar-item-active {
+  @apply bg-primary/10 text-primary border-l-4 border-primary rounded-none;
+}
+
+.gradient-hover {
+  @apply transition-all duration-300;
+}
+
+.gradient-hover:hover {
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.1) 0%, rgba(245, 166, 35, 0) 100%);
+}

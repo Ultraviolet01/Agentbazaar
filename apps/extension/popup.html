@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScamSniff</title>
+  <style>
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      border-radius: 8px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .status-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 16px;
+    }
+
+    .status-label {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-value {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 4px;
+      color: #10b981;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="logo"></div>
+    <div class="title">ScamSniff</div>
+  </div>
+  <div class="status-card">
+    <div class="status-label">Current Page Status</div>
+    <div class="status-value">Secure & Verified</div>
+  </div>
+  <button class="button">Run Full Scan</button>
+
+  <div class="status-card" style="margin-top: 20px; border: 1px dashed #cbd5e1; background: #f1f5f9; padding: 12px;">
+    <div class="status-label" style="font-size: 10px; margin-bottom: 8px;">Sovereign AI Keys (Overrides)</div>
+    
+    <div style="margin-bottom: 8px;">
+      <label style="font-size: 9px; font-weight: bold; color: #64748b; text-transform: uppercase;">ElevenLabs Key</label>
+      <input type="password" id="elevenLabsKey" placeholder="Paste ElevenLabs Key" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; box-sizing: border-box;">
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label style="font-size: 9px; font-weight: bold; color: #64748b; text-transform: uppercase;">Claude Key</label>
+      <input type="password" id="claudeKey" placeholder="Paste Anthropic Key" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; box-sizing: border-box;">
+    </div>
+
+    <button id="saveKeys" class="button" style="padding: 8px; font-size: 12px; background: #475569;">Save Credentials</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
