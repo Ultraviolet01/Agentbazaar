@@ -14,11 +14,11 @@ A hybrid AI agent platform with specialized products powered by the OG Network.
 - **Frontend**: Next.js, TailwindCSS, Shadcn/ui, Zustand, Tanstack Query
 - **Backend**: Node.js, Express, Prisma, PostgreSQL
 - **Blockchain & 0G Network**:
-  - **0G Storage SDK**: `@0glabs/0g-ts-sdk` for decentralized storage operations.
+  - **0G Chain**: High-performance EVM-compatible Layer 1 for smart contract deployment (Chain ID: 16661).
   - **0G Data Availability (DA)**: High-throughput DA layer for secured data dispersal.
-  - **0G Mainnet (BSC)**: EVM-compatible layer for OG token utility.
+  - **0G Storage**: Decentralized storage for agent artifacts and project memory via `@0glabs/0g-ts-sdk`.
   - **0G Indexer**: High-performance data indexing for 0G Storage.
-  - **RPC Infrastructure**: Multi-provider failover (QuickNode & Alchemy) for resilient 0G Network interactions.
+  - **RPC Infrastructure**: Multi-provider failover (QuickNode & Alchemy for BSC; 0G RPC for Mainnet).
 
 ## Getting Started
 
@@ -56,9 +56,10 @@ A hybrid AI agent platform with specialized products powered by the OG Network.
 - **Unified Auth**: Synchronized session management across Express and Next.js layers using `accessToken`.
 
 ## 0G Network & Wallet Infrastructure
-- **Blockchain interactions**: Uses QuickNode and Alchemy as primary RPCs for 0G Network/BSC Mainnet via a resilient failover mechanism.
+- **Smart Contracts**: Fully deployed on **0G Chain** (Mainnet) for decentralized governance and execution.
 - **Data Availability (DA)**: Utilizes 0G DA for high-speed, decentralized data verification.
 - **Decentralized Storage**: Integrated with 0G Storage for secure data persistence.
+- **Blockchain interactions**: Uses QuickNode, Alchemy, and 0G RPCs for resilient network connectivity.
 - **Token Deposits**: Supports OG token deposits on 0G Mainnet with real-time credit (CRD) conversion at a 1:10 ratio.
 - **Wallet Security**: Signature-based ownership verification for all financial interactions.
 
