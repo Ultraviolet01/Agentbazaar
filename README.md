@@ -13,7 +13,11 @@ A hybrid AI agent platform with specialized products powered by the OG Network.
 - **Monorepo**: Turborepo + pnpm
 - **Frontend**: Next.js, TailwindCSS, Shadcn/ui, Zustand, Tanstack Query
 - **Backend**: Node.js, Express, Prisma, PostgreSQL
-- **Blockchain**: @0glabs/0g-ts-sdk (0G Storage)
+- **Blockchain & 0G Network**:
+  - **0G Storage SDK**: `@0glabs/0g-ts-sdk` for decentralized storage operations.
+  - **0G Mainnet (BSC)**: EVM-compatible layer for OG token utility.
+  - **0G Indexer**: High-performance data indexing for 0G Storage.
+  - **RPC Infrastructure**: Multi-provider failover (QuickNode & Alchemy) for resilient 0G Network interactions.
 
 ## Getting Started
 
@@ -51,8 +55,9 @@ A hybrid AI agent platform with specialized products powered by the OG Network.
 - **Unified Auth**: Synchronized session management across Express and Next.js layers using `accessToken`.
 
 ## 0G Network & Wallet Infrastructure
-- **Blockchain interactions**: Uses QuickNode as the primary RPC for BSC Mainnet (`apps/web/src/app/wallet/page.tsx`).
-- **Decentralized Storage**: Integrated with 0G Storage via `@0glabs/0g-ts-sdk` (`apps/api/src/services/storage.ts`).
-- **Token Deposits**: Supports OG token deposits on BSC with real-time credit (CRD) conversion.
+- **Blockchain interactions**: Uses QuickNode and Alchemy as primary RPCs for 0G Network/BSC Mainnet via a resilient failover mechanism.
+- **Decentralized Storage**: Integrated with 0G Storage for secure data persistence.
+- **Token Deposits**: Supports OG token deposits on 0G Mainnet with real-time credit (CRD) conversion at a 1:10 ratio.
+- **Wallet Security**: Signature-based ownership verification for all financial interactions.
 
-Ensure you provide valid RPC and Indexer endpoints in your `.env` to enable these features.
+Ensure you provide valid 0G RPC and Indexer endpoints in your `.env` to enable these features.
