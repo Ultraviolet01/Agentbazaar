@@ -15,6 +15,7 @@ A hybrid AI agent platform with specialized products powered by the OG Network.
 - **Backend**: Node.js, Express, Prisma, PostgreSQL
 - **Blockchain & 0G Network**:
   - **0G Storage SDK**: `@0glabs/0g-ts-sdk` for decentralized storage operations.
+  - **0G Data Availability (DA)**: High-throughput DA layer for secured data dispersal.
   - **0G Mainnet (BSC)**: EVM-compatible layer for OG token utility.
   - **0G Indexer**: High-performance data indexing for 0G Storage.
   - **RPC Infrastructure**: Multi-provider failover (QuickNode & Alchemy) for resilient 0G Network interactions.
@@ -56,6 +57,7 @@ A hybrid AI agent platform with specialized products powered by the OG Network.
 
 ## 0G Network & Wallet Infrastructure
 - **Blockchain interactions**: Uses QuickNode and Alchemy as primary RPCs for 0G Network/BSC Mainnet via a resilient failover mechanism.
+- **Data Availability (DA)**: Utilizes 0G DA for high-speed, decentralized data verification.
 - **Decentralized Storage**: Integrated with 0G Storage for secure data persistence.
 - **Token Deposits**: Supports OG token deposits on 0G Mainnet with real-time credit (CRD) conversion at a 1:10 ratio.
 - **Wallet Security**: Signature-based ownership verification for all financial interactions.
