@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   const steps = [
     {
       title: 'Welcome to AgentBazaar',
-      description: 'You\'ve been credited 250 CRD to get started',
+      description: 'You\'ve been credited 20 CRD to get started',
       icon: Check
     },
     {
