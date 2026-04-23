@@ -160,14 +160,16 @@ export async function POST(req: Request) {
     }
 
     if (!generatedContent && lastError) {
+      console.error("[ThreadSmith] ALL MODELS FAILED. Last Error:", lastError);
       return NextResponse.json({ 
-        error: `AI Engine Exhausted: ${lastError.message || "Unknown AI error"}`,
+        error: `AI Engine Exhausted: ${lastError.message || "Connection error"}`,
         details: lastError.status ? `Status ${lastError.status}` : "No status code",
         debug: {
-          keyPrefix: apiKey ? `${apiKey.substring(0, 12)}...` : "missing",
+          keyPrefix: apiKey ? `${apiKey.substring(0, 15)}...` : "missing",
           keyLength: apiKey?.length || 0,
           attemptedModels: modelsToTry,
-          rawError: lastError?.raw || lastError?.message || "No raw details"
+          rawError: lastError,
+          stack: lastError?.stack
         },
         suggestion: "Verify that the API Key prefix/length matches your dashboard and that you have access to Claude 3 models."
       }, { status: 500 });
