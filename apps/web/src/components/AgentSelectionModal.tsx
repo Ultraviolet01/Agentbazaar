@@ -33,7 +33,7 @@ const agents = [
     cost: "1 CRD",
     color: "text-green-600",
     bg: "bg-green-100",
-    href: "/scamsniff",
+    href: "/agents/scamsniff",
     tag: "High Accuracy"
   },
   {
@@ -44,7 +44,7 @@ const agents = [
     cost: "2-5 CRD",
     color: "text-orange-600",
     bg: "bg-orange-100",
-    href: "/threadsmith",
+    href: "/agents/threadsmith",
     tag: "Multi-Modal"
   },
   {
@@ -55,7 +55,7 @@ const agents = [
     cost: "10 CRD",
     color: "text-blue-600",
     bg: "bg-blue-100",
-    href: "/launchwatch",
+    href: "/agents/launchwatch",
     tag: "24/7 Pulse"
   }
 ];
