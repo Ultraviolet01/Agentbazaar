@@ -67,7 +67,6 @@ const deposit = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
         // Check if transaction already exists
-        // @ts-ignore - txHash might not be in the generated types yet due to generation issues
         const existingTx = await prisma.transaction.findFirst({
             where: { txHash }
         });
@@ -83,7 +82,6 @@ const deposit = async (req, res) => {
                     type: "DEPOSIT",
                     amount: crdAmount,
                     description: `Deposit of ${ogAmount} OG tokens. Wallet: ${walletAddress}, TX: ${txHash}`,
-                    // @ts-ignore
                     txHash,
                     status: "COMPLETED"
                 }

@@ -54,14 +54,24 @@ const register = async (req, res) => {
             return res.status(400).json({ error: "User already exists" });
         }
         const passwordHash = await bcryptjs_1.default.hash(password, 12);
-        await prisma.user.create({
+        const user = await prisma.user.create({
             data: {
                 email,
                 username,
                 passwordHash,
                 emailVerified: true, // Auto-verify
                 verificationToken: null,
-                credits: 250.0
+                credits: 20.0
+            }
+        });
+        // Create Transaction record for signup bonus
+        await prisma.transaction.create({
+            data: {
+                userId: user.id,
+                amount: 20.0,
+                type: "CREDIT",
+                status: "COMPLETED",
+                description: "Signup Bonus"
             }
         });
         // Verification email skip

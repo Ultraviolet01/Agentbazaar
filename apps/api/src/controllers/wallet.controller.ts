@@ -15,7 +15,7 @@ export const connectWallet = async (req: Request, res: Response) => {
     });
 
     res.json({ message: "Wallet connected", walletAddress: user.walletAddress });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ error: "Failed to connect wallet" });
   }
 };
@@ -39,7 +39,7 @@ export const getStatus = async (req: Request, res: Response) => {
       credits: user.credits,
       walletAddress: user.walletAddress
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ error: "Failed to get status" });
   }
 };
@@ -74,7 +74,6 @@ export const deposit = async (req: Request, res: Response) => {
     }
 
     // Check if transaction already exists
-    // @ts-ignore - txHash might not be in the generated types yet due to generation issues
     const existingTx = await prisma.transaction.findFirst({
       where: { txHash }
     });
@@ -92,7 +91,6 @@ export const deposit = async (req: Request, res: Response) => {
           type: "DEPOSIT",
           amount: crdAmount,
           description: `Deposit of ${ogAmount} OG tokens. Wallet: ${walletAddress}, TX: ${txHash}`,
-          // @ts-ignore
           txHash,
           status: "COMPLETED"
         }
@@ -137,7 +135,7 @@ export const getTransactions = async (req: Request, res: Response) => {
     }));
 
     res.json({ transactions: mappedTransactions });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get transactions error:", error);
     res.status(500).json({ error: "Failed to get transactions" });
   }

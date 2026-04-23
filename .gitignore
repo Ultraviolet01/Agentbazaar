@@ -33,3 +33,5 @@ users_dump.json
 # OS files
 .DS_Store
 Thumbs.db
+
+.vercel

@@ -11,7 +11,7 @@ export class CreditsService {
    * Atomic deduction of credits for agent runs or other usage
    */
   async deductCredits(userId: string, amount: number, description: string) {
-    return await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx: any) => {
       // Get the user to check balance
       const user = await tx.user.findUnique({ where: { id: userId } });
       
@@ -48,7 +48,7 @@ export class CreditsService {
    * Adding credits for purchases (Stripe success)
    */
   async addCredits(userId: string, amount: number, description: string, txHash?: string) {
-    return await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx: any) => {
       // Update User Credit Balance
       await tx.user.update({
         where: { id: userId },

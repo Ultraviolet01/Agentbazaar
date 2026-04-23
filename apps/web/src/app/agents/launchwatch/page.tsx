@@ -548,7 +548,7 @@ export default function LaunchWatchPage() {
                         <div>
                           <span className="text-gray-500">Contract:</span>
                           <p className="font-mono text-xs text-gray-900 mt-1">
-                            {monitor.contractAddress.slice(0, 10)}...{monitor.contractAddress.slice(-8)}
+                            {monitor.contractAddress?.slice(0, 10)}...{monitor.contractAddress?.slice(-8)}
                           </p>
                         </div>
                         <div>

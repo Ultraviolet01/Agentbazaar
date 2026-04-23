@@ -68,12 +68,10 @@ const updateProject = async (req, res) => {
     }
 };
 exports.updateProject = updateProject;
-const monitoring_engine_1 = require("../services/monitoring.engine");
 const deleteProject = async (req, res) => {
     try {
         const { id } = req.params;
-        // Stop any active monitoring jobs
-        monitoring_engine_1.MonitoringEngine.stopMonitoring(id);
+        // Monitoring is stateless in serverless, no need to stop persistent jobs.
         await prisma.project.delete({ where: { id } });
         res.json({ message: "Project deleted successfully" });
     }

@@ -57,7 +57,7 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         username,
@@ -65,6 +65,17 @@ export const register = async (req: Request, res: Response) => {
         emailVerified: true, // Auto-verify
         verificationToken: null,
         credits: 20.0
+      }
+    });
+
+    // Create Transaction record for signup bonus
+    await prisma.transaction.create({
+      data: {
+        userId: user.id,
+        amount: 20.0,
+        type: "CREDIT",
+        status: "COMPLETED",
+        description: "Signup Bonus"
       }
     });
 

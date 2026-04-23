@@ -204,8 +204,8 @@ export const setupLaunchWatch = async (req: Request, res: Response) => {
       }
     });
 
-    // 3. Start Monitoring Engines
-    await MonitoringEngine.scheduleMonitoring(projectId);
+    // 3. Trigger initial check
+    await MonitoringEngine.performMonitoringCheck(projectId);
 
     res.json({ message: "LaunchWatch monitor established", result });
   } catch (error: any) {

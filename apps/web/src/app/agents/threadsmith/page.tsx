@@ -149,7 +149,7 @@ export default function ThreadSmithPage() {
           </div>
           <div className="flex items-center gap-3">
             <Badge className="bg-orange-50 text-orange-700 border border-orange-100 font-bold text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase">
-              Claude 4.6 Optimized
+              Claude 3.5 Optimized
             </Badge>
             <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white border border-gray-100 shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -195,10 +195,10 @@ export default function ThreadSmithPage() {
                     </SelectTrigger>
                     <SelectContent className="bg-white border-gray-100 text-gray-900 shadow-xl rounded-2xl">
                       <SelectItem value="standard">
-                        STANDARD (SONNET 4.6) — 2 CRD
+                        STANDARD (SONNET 3.5) — 2 CRD
                       </SelectItem>
                       <SelectItem value="premium">
-                        PREMIUM (OPUS 4.6) — 5 CRD
+                        PREMIUM (OPUS 3.5) — 5 CRD
                       </SelectItem>
                     </SelectContent>
                   </Select>

@@ -2,12 +2,16 @@
   "name": "agentbazaar",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo build --filter !extension",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:push": "pnpm --filter database push",
-    "db:generate": "pnpm --filter database generate"
+    "db:generate": "pnpm --filter database generate",
+    "postinstall": "pnpm db:generate"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",

@@ -1,9 +1,13 @@
 {
-  "extends": "../../packages/config/typescript/base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "module": "esnext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "types": ["chrome"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "target": "esnext"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

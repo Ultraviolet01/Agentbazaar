@@ -1,41 +1,40 @@
-import { Server } from "socket.io";
-import { Server as HttpServer } from "http";
+import Pusher from "pusher";
 
-let io: Server;
+let pusher: Pusher;
 
-export const initSocket = (server: HttpServer) => {
-  io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
-  });
-
-  io.on("connection", (socket) => {
-    console.log("Client connected to WebSocket:", socket.id);
-    
-    socket.on("joinProject", (projectId) => {
-      socket.join(`project_${projectId}`);
-      console.log(`Socket ${socket.id} joined project_${projectId}`);
+/**
+ * Initializes Pusher with environment variables.
+ * In a serverless environment, this is called on demand.
+ */
+export const initSocket = () => {
+  if (!pusher) {
+    pusher = new Pusher({
+      appId: process.env.PUSHER_APP_ID!,
+      key: process.env.PUSHER_KEY!,
+      secret: process.env.PUSHER_SECRET!,
+      cluster: process.env.PUSHER_CLUSTER!,
+      useTLS: true,
     });
-
-    socket.on("disconnect", () => {
-      console.log("Client disconnected");
-    });
-  });
-
-  return io;
+  }
+  return pusher;
 };
 
 export const getIO = () => {
-  if (!io) {
-    throw new Error("Socket.io not initialized");
+  if (!pusher) {
+    initSocket();
   }
-  return io;
+  return pusher;
 };
 
-export const broadcastAlert = (projectId: string, alert: any) => {
-  if (io) {
-    io.to(`project_${projectId}`).emit("newAlert", alert);
+/**
+ * Broadcasts an alert to a specific project channel using Pusher.
+ */
+export const broadcastAlert = async (projectId: string, alert: any) => {
+  const p = getIO();
+  try {
+    await p.trigger(`project_${projectId}`, "newAlert", alert);
+    console.log(`📡 Pusher alert broadcasted for project ${projectId}`);
+  } catch (error) {
+    console.error("❌ Pusher broadcast failed:", error);
   }
 };

@@ -1,4 +1,3 @@
-import * as cron from "node-cron";
 import { PrismaClient, AlertSeverity, CreditsService, StorageService } from "@agentbazaar/database";
 import * as EmailService from "./email.service";
 import { SimulatedSocialService } from "./social.service";
@@ -8,56 +7,41 @@ const storageService = new StorageService();
 const creditsService = new CreditsService(prisma);
 
 export class MonitoringEngine {
-  private static jobs: Map<string, cron.ScheduledTask> = new Map();
-
   /**
-   * Initializes all active monitoring configurations on startup
+   * Triggers monitoring checks for all active projects.
+   * This is intended to be called by a Vercel Cron Job.
    */
-  static async init() {
+  static async triggerAllActive() {
     try {
-      console.log("🚀 Initializing LaunchWatch Monitoring Engine...");
+      console.log("🚀 Triggering all active monitors via Cron...");
+      const now = new Date();
       const activeConfigs = await prisma.launchWatchConfig.findMany({
-        where: { active: true }
+        where: { 
+          active: true,
+          OR: [
+            { nextRunAt: { lte: now } },
+            { nextRunAt: null }
+          ]
+        }
       });
 
+      console.log(`📡 Found ${activeConfigs.length} monitors due for check.`);
+
       for (const config of activeConfigs) {
-        this.scheduleMonitoring(config.projectId);
+        await this.performMonitoringCheck(config.projectId);
       }
+      
+      return { count: activeConfigs.length };
     } catch (error: any) {
-      console.error("❌ Failed to initialize Monitoring Engine:", error.message);
+      console.error("❌ Failed to trigger monitoring:", error.message);
+      throw error;
     }
-  }
-
-  /**
-   * Schedules or updates a monitoring job for a specific project
-   */
-  static async scheduleMonitoring(projectId: string) {
-    if (this.jobs.has(projectId)) {
-      this.jobs.get(projectId)?.stop();
-    }
-
-    const config = await prisma.launchWatchConfig.findUnique({
-      where: { projectId }
-    });
-
-    if (!config || !config.active) return;
-
-    let cronPattern = "0 0 * * *"; // Daily
-    if (config.frequency === "HOURLY") cronPattern = "0 * * * *";
-    if (config.frequency === "WEEKLY") cronPattern = "0 0 * * 0";
-
-    const job = cron.schedule(cronPattern, async () => {
-      await this.performMonitoringCheck(projectId);
-    });
-
-    this.jobs.set(projectId, job);
-    console.log(`📡 Launched monitor for project ${projectId} (${config.frequency})`);
   }
 
   /**
    * Core execution loop for a monitoring check
    */
-  private static async performMonitoringCheck(projectId: string) {
+  static async performMonitoringCheck(projectId: string) {
     try {
       const config = await prisma.launchWatchConfig.findUnique({
         where: { projectId },
@@ -132,7 +116,7 @@ export class MonitoringEngine {
         }
       });
 
-      // 5. Process Alerts
+      // 5. Process Alerts (Emails)
       for (const alertData of alerts) {
         const alert = await prisma.launchWatchAlert.create({
           data: {
@@ -161,7 +145,7 @@ export class MonitoringEngine {
         }
       }
 
-      // 6. Housekeeping
+      // 6. Housekeeping - Update Run Times
       await prisma.launchWatchConfig.update({
         where: { projectId },
         data: { 
@@ -170,7 +154,6 @@ export class MonitoringEngine {
         }
       });
 
-      console.log(`📡 Snapshot cached to 0G: ${uploadResult.cid}`);
       console.log(`✅ Monitoring check completed for ${config.project.name}`);
 
     } catch (err: any) {
@@ -186,9 +169,6 @@ export class MonitoringEngine {
             data: { active: false }
           });
 
-          // Stop the active cron job
-          this.stopMonitoring(projectId);
-
           // Notify User
           const config = await prisma.launchWatchConfig.findUnique({
             where: { projectId },
@@ -196,7 +176,7 @@ export class MonitoringEngine {
           });
           
           if (config) {
-          await EmailService.sendAlertEmail(config.project.user.email, {
+            await EmailService.sendAlertEmail(config.project.user.email, {
               alertType: "MONITORING_SUSPENDED",
               severity: AlertSeverity.CRITICAL,
               message: `Your LaunchWatch monitor for "${config.project.name}" has been suspended due to insufficient credits. Please top up your balance to resume autonomous surveillance.`,
@@ -215,13 +195,5 @@ export class MonitoringEngine {
       if (frequency === "HOURLY") return new Date(now.getTime() + 60 * 60 * 1000);
       if (frequency === "WEEKLY") return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       return new Date(now.getTime() + 24 * 60 * 60 * 1000); // Daily
-  }
-
-  static stopMonitoring(projectId: string) {
-    if (this.jobs.has(projectId)) {
-      this.jobs.get(projectId)?.stop();
-      this.jobs.delete(projectId);
-      console.log(`🛑 Stopped monitor for project ${projectId}`);
-    }
   }
 }

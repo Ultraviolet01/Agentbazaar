@@ -1,62 +1,79 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import prisma from '@/lib/db';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+const prisma = new PrismaClient();
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
 
-export const dynamic = 'force-dynamic';
+async function getAuthUser(req: Request) {
+  const cookieStore = cookies();
+  const token = cookieStore.get("auth_token")?.value;
 
-export async function GET(req: NextRequest) {
+  if (!token) return null;
+
   try {
-    // Verify user is authenticated - Unified with accessToken
-    const token = req.cookies.get('accessToken')?.value;
-    if (!token) {
-      // Map to 'Success' for notification-only authorization handling
-      return NextResponse.json({ error: 'Success' }, { status: 401 });
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload as { id: string; email: string };
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function GET(req: Request) {
+  const authUser = await getAuthUser(req);
+  if (!authUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: {
+        credits: true,
+        walletAddress: true
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { payload } = await jwtVerify(token, secret);
-    const userId = payload.userId as string;
-
-    // Get user data
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { credits: true }
-    });
-
-    // Get all transactions
     const transactions = await prisma.transaction.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 50 // Last 50 transactions
+      where: { userId: authUser.id },
+      orderBy: { createdAt: "desc" }
     });
 
-    // Calculate protocol usage (total spent on agents)
-    const protocolUsage = transactions
-      .filter(tx => tx.type === 'agent_run' || tx.type === 'AGENT_RUN')
-      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+    const mappedTransactions = transactions.map(tx => {
+      // Map credit-like types to "deposit" for UI to show as green (+)
+      const uiType = (tx.type === "CREDIT" || tx.type === "SIGNUP_BONUS" || tx.type === "DEPOSIT") 
+        ? "deposit" 
+        : tx.type.toLowerCase();
+      
+      return {
+        id: tx.id,
+        type: uiType,
+        description: tx.description,
+        amount: tx.amount,
+        status: tx.status.toLowerCase(),
+        date: tx.createdAt.toISOString()
+      };
+    });
 
-    // Format transactions for frontend
-    const formattedTransactions = transactions.map(tx => ({
-      id: tx.id,
-      type: tx.type.toLowerCase(),
-      description: tx.description || '',
-      amount: tx.amount,
-      date: tx.createdAt.toISOString(),
-      status: tx.status
-    }));
+    // Calculate totals
+    const protocolUsage = transactions
+      .filter(tx => tx.type === "AGENT_RUN")
+      .reduce((acc, tx) => acc + tx.amount, 0);
 
     return NextResponse.json({
-      balance: user?.credits || 0,
+      balance: user.credits,
       protocolUsage,
       totalTransactions: transactions.length,
-      transactions: formattedTransactions
+      transactions: mappedTransactions,
+      walletAddress: user.walletAddress
     });
-  } catch (error) {
-    console.error('Wallet stats error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch wallet stats' },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error("Wallet stats error:", error);
+    return NextResponse.json({ error: "Failed to fetch wallet stats" }, { status: 500 });
   }
 }

@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@agentbazaar/database";
 
+import { MonitoringEngine } from "../services/monitoring.engine";
+
 const prisma = new PrismaClient();
 
 export const getProjects = async (req: Request, res: Response) => {
@@ -68,14 +70,13 @@ export const updateProject = async (req: Request, res: Response) => {
   }
 };
 
-import { MonitoringEngine } from "../services/monitoring.engine";
+
 
 export const deleteProject = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     
-    // Stop any active monitoring jobs
-    MonitoringEngine.stopMonitoring(id);
+    // Monitoring is stateless in serverless, no need to stop persistent jobs.
     
     await prisma.project.delete({ where: { id } });
     res.json({ message: "Project deleted successfully" });

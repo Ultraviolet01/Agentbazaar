@@ -6,8 +6,12 @@ import * as agentsController from "../controllers/agents.controller";
 import * as walletController from "../controllers/wallet.controller";
 import * as alertsController from "../controllers/alerts.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
+import cronRoutes from "./cron.routes";
 
 const router: Router = Router();
+
+// Cron Routes
+router.use("/cron", cronRoutes);
 
 // Auth Routes
 router.post("/auth/register", authController.register);

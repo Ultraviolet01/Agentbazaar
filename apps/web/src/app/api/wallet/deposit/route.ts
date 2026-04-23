@@ -1,105 +1,77 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { jwtVerify } from 'jose';
-import { ethers } from 'ethers';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+const prisma = new PrismaClient();
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
 
-export async function POST(req: NextRequest) {
+async function getAuthUser(req: Request) {
+  const cookieStore = cookies();
+  const token = cookieStore.get("auth_token")?.value;
+
+  if (!token) return null;
+
   try {
-    // Verify user is authenticated
-    const token = req.cookies.get('accessToken')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Success' }, { status: 401 });
-    }
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload as { id: string; email: string };
+  } catch (error) {
+    return null;
+  }
+}
 
-    const { payload } = await jwtVerify(token, secret);
-    const userId = payload.userId as string;
+export async function POST(req: Request) {
+  const authUser = await getAuthUser(req);
+  if (!authUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const { ogAmount, crdAmount, txHash, walletAddress, signature } = await req.json();
+  try {
+    const { ogAmount, crdAmount, txHash, walletAddress } = await req.json();
 
     if (!txHash) {
-      return NextResponse.json({ error: 'Transaction hash is required' }, { status: 400 });
+      return NextResponse.json({ error: "Missing transaction hash" }, { status: 400 });
     }
 
-    // Check if already processed
+    // Check if transaction already exists
     const existingTx = await prisma.transaction.findUnique({
       where: { txHash }
     });
 
     if (existingTx) {
-      return NextResponse.json({ 
-        success: true, 
-        error: 'Transaction already processed',
-        txHash 
-      });
+      return NextResponse.json({ error: "Transaction already processed" }, { status: 400 });
     }
 
-    // Verify the transaction exists on BSC
-    const rpcUrls = [
-      process.env.NEXT_PUBLIC_QUICKNODE_RPC,
-      process.env.NEXT_PUBLIC_ALCHEMY_RPC,
-      'https://bsc-dataseed.binance.org'
-    ].filter(Boolean) as string[];
-
-    let receipt = null;
-    let lastError = null;
-
-    for (const url of rpcUrls) {
-      try {
-        const provider = new ethers.JsonRpcProvider(url);
-        receipt = await provider.getTransactionReceipt(txHash);
-        if (receipt) break;
-      } catch (e: any) {
-        lastError = e.message;
-      }
-    }
-
-    if (!receipt) {
-      return NextResponse.json(
-        { error: `Transaction not found on blockchain. LAST_ERR: ${lastError}` },
-        { status: 400 }
-      );
-    }
-
-    if (receipt.status !== 1) {
-      return NextResponse.json(
-        { error: 'Transaction failed on blockchain' },
-        { status: 400 }
-      );
-    }
-
-    // Atomic update
+    // Update user credits and record transaction
     const result = await prisma.$transaction(async (tx) => {
-      const t = await tx.transaction.create({
+      // Create transaction record
+      const newTx = await tx.transaction.create({
         data: {
-          userId,
+          userId: authUser.id,
+          type: "DEPOSIT",
           amount: crdAmount,
-          type: 'deposit',
-          status: 'completed',
-          description: `Deposited ${ogAmount} OG tokens (${crdAmount} CRD)`,
-          txHash: txHash
+          description: `Deposit of ${ogAmount} OG tokens. Wallet: ${walletAddress}, TX: ${txHash}`,
+          txHash,
+          status: "COMPLETED"
         }
       });
 
-      const u = await tx.user.update({
-        where: { id: userId },
-        data: { credits: { increment: crdAmount } }
+      // Update user credits
+      await tx.user.update({
+        where: { id: authUser.id },
+        data: {
+          credits: {
+            increment: crdAmount
+          }
+        }
       });
 
-      return { t, u };
+      return newTx;
     });
 
-    return NextResponse.json({
-      success: true,
-      credits: result.u.credits,
-      txHash
-    });
+    return NextResponse.json({ success: true, transaction: result });
   } catch (error: any) {
-    console.error('Deposit error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to process deposit' },
-      { status: 500 }
-    );
+    console.error("Deposit error:", error);
+    return NextResponse.json({ error: error.message || "Failed to process deposit" }, { status: 500 });
   }
 }

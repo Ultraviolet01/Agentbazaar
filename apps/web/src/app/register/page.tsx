@@ -170,7 +170,7 @@ export default function SignUpPage() {
             disabled={isLoading}
             className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-[24px] font-bold text-lg transition-all shadow-xl shadow-orange-100 flex items-center justify-center gap-3 transform hover:-translate-y-1 active:scale-[0.98] group/btn"
           >
-            <span className="uppercase tracking-wider">{isLoading ? 'Initializing...' : 'Initialize Account'}</span>
+            <span className="uppercase tracking-wider">{isLoading ? 'Initializing...' : 'Create Account'}</span>
             <ArrowRight className="w-6 h-6 group-hover/btn:translate-x-1.5 transition-transform" strokeWidth={3} />
           </Button>
         </form>

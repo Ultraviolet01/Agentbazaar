@@ -34,7 +34,6 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MonitoringEngine = void 0;
-const cron = __importStar(require("node-cron"));
 const database_1 = require("@agentbazaar/database");
 const EmailService = __importStar(require("./email.service"));
 const social_service_1 = require("./social.service");
@@ -43,44 +42,32 @@ const storageService = new database_1.StorageService();
 const creditsService = new database_1.CreditsService(prisma);
 class MonitoringEngine {
     /**
-     * Initializes all active monitoring configurations on startup
+     * Triggers monitoring checks for all active projects.
+     * This is intended to be called by a Vercel Cron Job.
      */
-    static async init() {
+    static async triggerAllActive() {
         try {
-            console.log("🚀 Initializing LaunchWatch Monitoring Engine...");
+            console.log("🚀 Triggering all active monitors via Cron...");
+            const now = new Date();
             const activeConfigs = await prisma.launchWatchConfig.findMany({
-                where: { active: true }
+                where: {
+                    active: true,
+                    OR: [
+                        { nextRunAt: { lte: now } },
+                        { nextRunAt: null }
+                    ]
+                }
             });
+            console.log(`📡 Found ${activeConfigs.length} monitors due for check.`);
             for (const config of activeConfigs) {
-                this.scheduleMonitoring(config.projectId);
+                await this.performMonitoringCheck(config.projectId);
             }
+            return { count: activeConfigs.length };
         }
         catch (error) {
-            console.error("❌ Failed to initialize Monitoring Engine:", error.message);
+            console.error("❌ Failed to trigger monitoring:", error.message);
+            throw error;
         }
-    }
-    /**
-     * Schedules or updates a monitoring job for a specific project
-     */
-    static async scheduleMonitoring(projectId) {
-        if (this.jobs.has(projectId)) {
-            this.jobs.get(projectId)?.stop();
-        }
-        const config = await prisma.launchWatchConfig.findUnique({
-            where: { projectId }
-        });
-        if (!config || !config.active)
-            return;
-        let cronPattern = "0 0 * * *"; // Daily
-        if (config.frequency === "HOURLY")
-            cronPattern = "0 * * * *";
-        if (config.frequency === "WEEKLY")
-            cronPattern = "0 0 * * 0";
-        const job = cron.schedule(cronPattern, async () => {
-            await this.performMonitoringCheck(projectId);
-        });
-        this.jobs.set(projectId, job);
-        console.log(`📡 Launched monitor for project ${projectId} (${config.frequency})`);
     }
     /**
      * Core execution loop for a monitoring check
@@ -151,7 +138,7 @@ class MonitoringEngine {
                     artifactCid: uploadResult.cid
                 }
             });
-            // 5. Process Alerts
+            // 5. Process Alerts (Emails)
             for (const alertData of alerts) {
                 const alert = await prisma.launchWatchAlert.create({
                     data: {
@@ -177,7 +164,7 @@ class MonitoringEngine {
                     });
                 }
             }
-            // 6. Housekeeping
+            // 6. Housekeeping - Update Run Times
             await prisma.launchWatchConfig.update({
                 where: { projectId },
                 data: {
@@ -185,7 +172,6 @@ class MonitoringEngine {
                     nextRunAt: this.calculateNextRun(config.frequency)
                 }
             });
-            console.log(`📡 Snapshot cached to 0G: ${uploadResult.cid}`);
             console.log(`✅ Monitoring check completed for ${config.project.name}`);
         }
         catch (err) {
@@ -198,8 +184,6 @@ class MonitoringEngine {
                         where: { projectId },
                         data: { active: false }
                     });
-                    // Stop the active cron job
-                    this.stopMonitoring(projectId);
                     // Notify User
                     const config = await prisma.launchWatchConfig.findUnique({
                         where: { projectId },
@@ -228,13 +212,5 @@ class MonitoringEngine {
             return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         return new Date(now.getTime() + 24 * 60 * 60 * 1000); // Daily
     }
-    static stopMonitoring(projectId) {
-        if (this.jobs.has(projectId)) {
-            this.jobs.get(projectId)?.stop();
-            this.jobs.delete(projectId);
-            console.log(`🛑 Stopped monitor for project ${projectId}`);
-        }
-    }
 }
 exports.MonitoringEngine = MonitoringEngine;
-MonitoringEngine.jobs = new Map();

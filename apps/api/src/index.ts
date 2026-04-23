@@ -12,15 +12,12 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
-const app = express();
-const httpServer = createServer(app);
+const expressApp = express();
+const httpServer = createServer(expressApp);
 const port = Number(process.env.PORT) || 3005;
 
-// Initialize Monitoring Engine
-MonitoringEngine.init();
-
-// Initialize WebSockets
-initSocket(httpServer);
+// Initialize WebSockets (on-demand via Pusher)
+initSocket();
 
 // Global Rate Limiting
 const limiter = rateLimit({
@@ -30,18 +27,18 @@ const limiter = rateLimit({
 });
 
 // Middleware
-app.use(helmet({
+expressApp.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(cookieParser());
-app.use(limiter);
-app.use(cors({
+expressApp.use(cookieParser());
+expressApp.use(limiter);
+expressApp.use(cors({
   origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3010",
   credentials: true
 }));
 
 // Use express.json() for all routes EXCEPT Stripe webhooks
-app.use((req, res, next) => {
+expressApp.use((req, res, next) => {
   if (req.originalUrl === "/webhooks/stripe") {
     next();
   } else {
@@ -50,18 +47,21 @@ app.use((req, res, next) => {
 });
 
 // Main Routes
-app.use("/", routes);
+expressApp.use("/", routes);
 
 // Health Check
-app.get("/health", (req, res) => {
+expressApp.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date(), service: "AgentBazaar API" });
 });
 
-// ... listen ...
+// Conditionally listen if not in a serverless environment
+if (process.env.NODE_ENV !== "production" || process.env.VERCEL !== "1") {
+  httpServer.listen(port, "0.0.0.0", () => {
+    console.log(`✅ AgentBazaar API with LaunchWatch is LIVE`);
+    console.log(`📡 URL: http://localhost:${port}`);
+    console.log(`🏥 Health Check: http://localhost:${port}/health`);
+    console.log(`🕰️ Started at: ${new Date().toISOString()}`);
+  });
+}
 
-httpServer.listen(port, "0.0.0.0", () => {
-  console.log(`✅ AgentBazaar API with LaunchWatch is LIVE`);
-  console.log(`📡 URL: http://localhost:${port}`);
-  console.log(`🏥 Health Check: http://localhost:${port}/health`);
-  console.log(`🕰️ Started at: ${new Date().toISOString()}`);
-});
+export default expressApp;

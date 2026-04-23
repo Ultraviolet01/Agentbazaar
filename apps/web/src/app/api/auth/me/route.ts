@@ -1,28 +1,29 @@
-// /src/app/api/auth/me/route.ts
-export const dynamic = 'force-dynamic';
-import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import { PrismaClient } from '@agentbazaar/database';
+import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+import { PrismaClient } from "@prisma/client";
+import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get('accessToken')?.value;
+    const token = cookies().get("auth_token")?.value;
     if (!token) {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    const { payload } = await jwtVerify(token, secret);
-    
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const decoded = payload as { id: string; email: string };
+
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId as string },
+      where: { id: decoded.id },
       select: {
         id: true,
         email: true,
         username: true,
         credits: true,
+        onboardingCompleted: true,
         agentRuns: {
           select: {
             creditsUsed: true
@@ -35,9 +36,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    const totalSpent = user.agentRuns.reduce((sum: number, run: any) => sum + run.creditsUsed, 0);
+    const totalSpent = user.agentRuns.reduce((sum, run) => sum + run.creditsUsed, 0);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       user: {
         ...user,
         agentRuns: undefined,
@@ -45,6 +46,7 @@ export async function GET(req: NextRequest) {
       }
     });
   } catch (error) {
+    console.error("Auth verify error:", error);
     return NextResponse.json({ user: null }, { status: 401 });
   }
 }

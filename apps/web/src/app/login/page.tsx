@@ -126,7 +126,7 @@ export default function LoginPage() {
                     >
                         {loading ? <Loader2 className="animate-spin" size={24} /> : (
                             <>
-                                <span className="uppercase tracking-wider">Initialize Session</span>
+                                <span className="uppercase tracking-wider">Sign In</span>
                                 <ArrowRight size={22} className="ml-3 group-hover/btn:translate-x-1.5 transition-transform" strokeWidth={3} />
                             </>
                         )}
@@ -141,7 +141,7 @@ export default function LoginPage() {
                     <div className="h-px w-10 bg-gray-100" />
                 </div>
                 <p className="text-[11px] font-bold text-gray-400 leading-relaxed">
-                    New to AgentBazaar? <Link href="/register" className="text-orange-500 hover:text-orange-600 transition-colors underline-offset-4 hover:underline">Request Node Token</Link>
+                    New to AgentBazaar? <Link href="/register" className="text-orange-500 hover:text-orange-600 transition-colors underline-offset-4 hover:underline">Sign Up</Link>
                 </p>
             </div>
         </Card>

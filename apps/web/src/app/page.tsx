@@ -260,7 +260,7 @@ function AgentCard({ icon: Icon, title, desc, cost, highlight, color, bgColor }:
         </div>
         <Button 
           variant="primary"
-          onClick={() => router.push('/register')}
+          onClick={() => router.push('/marketplace')}
           className="px-6 py-2 h-10 rounded-xl"
         >
           Launch
