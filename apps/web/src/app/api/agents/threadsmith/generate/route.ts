@@ -95,16 +95,16 @@ export async function POST(req: Request) {
     let generatedContent = "";
     const modelsToTry = [
       "claude-3-5-sonnet-latest",
+      "claude-3-5-sonnet-20241022",
       "claude-3-5-sonnet-20240620",
       "claude-3-opus-20240229",
-      "claude-3-haiku-20240307",
-      "claude-3-sonnet-20240229"
+      "claude-3-haiku-20240307"
     ];
 
     let lastError: any = null;
 
     // Try RAW FETCH to bypass potential SDK issues
-    console.log("[Diagnostic] Attempting RAW FETCH with model: claude-3-5-sonnet-20240620");
+    console.log("[Diagnostic] Attempting RAW FETCH with model: claude-3-5-sonnet-20241022");
     try {
       const rawResponse = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
           "content-type": "application/json"
         },
         body: JSON.stringify({
-          model: "claude-3-5-sonnet-20240620",
+          model: "claude-3-5-sonnet-20241022",
           max_tokens: 1500,
           system: THREADSMITH_SYSTEM_PROMPT,
           messages: [{ 
