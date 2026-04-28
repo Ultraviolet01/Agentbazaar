@@ -17,7 +17,7 @@ import api from '@/lib/api';
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [credits] = useState(250); // Free starting credits
+  const [credits] = useState(20); // Free starting credits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const steps = [
