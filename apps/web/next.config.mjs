@@ -18,12 +18,12 @@ const nextConfig = {
   optimizeFonts: false,
   async rewrites() {
       return {
-        afterFiles: [
+        fallback: [
           {
             source: '/api/:path*',
             destination: process.env.NODE_ENV === 'production' 
               ? '/api/:path*' // Point to the same origin in production
-              : 'http://localhost:3005/:path*', // Local dev
+              : 'http://localhost:3006/:path*', // Local dev
           },
         ],
       };

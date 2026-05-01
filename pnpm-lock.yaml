@@ -7,6 +7,19 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@0glabs/0g-ts-sdk':
+        specifier: ^0.2.1
+        version: 0.2.9(bufferutil@4.1.0)(ethers@6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(utf-8-validate@6.0.6)
+      axios:
+        specifier: ^1.6.8
+        version: 1.15.0
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+      ethers:
+        specifier: ^6.16.0
+        version: 6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     devDependencies:
       nodemon:
         specifier: ^3.1.0
@@ -3747,6 +3760,10 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
@@ -11471,6 +11488,8 @@ snapshots:
       domhandler: 5.0.3
 
   dotenv@16.6.1: {}
+
+  dotenv@17.4.2: {}
 
   dunder-proto@1.0.1:
     dependencies:

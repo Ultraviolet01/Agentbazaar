@@ -15,18 +15,18 @@ import { uploadEncryptedBlob } from '@/lib/og-storage';
  */
 
 const prisma = new PrismaClient();
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+const secret = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET || 'at_super-secret-key');
 
 export async function POST(req: NextRequest) {
   try {
     // Verify authentication
-    const token = req.cookies.get('auth_token')?.value;
+    const token = req.cookies.get('accessToken')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { payload } = await jwtVerify(token, secret);
-    const userId = payload.id as string;
+    const userId = payload.userId as string;
 
     const body = await req.json();
     const {

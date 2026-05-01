@@ -28,6 +28,7 @@ const CATEGORIES = [
   { value: 'monitoring', label: '📡 Monitoring & Alerts', color: '#3b82f6' },
   { value: 'analytics', label: '📊 Analytics & Insights', color: '#8b5cf6' },
   { value: 'automation', label: '🤖 Automation & Tasks', color: '#ec4899' },
+  { value: 'others', label: '📁 Others', color: '#64748b' },
 ];
 
 const MODEL_PROVIDERS = [
@@ -82,6 +83,7 @@ export default function DeployAgentPage() {
       anthropic_api_key: '',
       custom_api_key: '',
     } as Record<string, string>,
+    customSecrets: [] as { key: string, value: string }[],
   });
 
   // Tag input
@@ -128,7 +130,25 @@ export default function DeployAgentPage() {
     updated[index] = { ...updated[index], [field]: value };
     handleInputChange('inputFields', updated);
   };
+  const addCustomSecret = () => {
+    handleInputChange('customSecrets', [
+      ...formData.customSecrets,
+      { key: '', value: '' }
+    ]);
+  };
 
+  const removeCustomSecret = (index: number) => {
+    handleInputChange(
+      'customSecrets',
+      formData.customSecrets.filter((_, i) => i !== index)
+    );
+  };
+
+  const updateCustomSecret = (index: number, field: 'key' | 'value', value: string) => {
+    const updated = [...formData.customSecrets];
+    updated[index] = { ...updated[index], [field]: value };
+    handleInputChange('customSecrets', updated);
+  };
   const handleSubmit = async () => {
     setIsLoading(true);
     setError('');
@@ -179,9 +199,10 @@ export default function DeployAgentPage() {
       let encryptedCredentials = null;
       let credentialSchema = null;
       
-      const requiresKeys = formData.modelProvider !== 'custom' || formData.apiKeys.custom_api_key;
+      const hasAnyKey = formData.apiKeys.openai_api_key || formData.apiKeys.anthropic_api_key || formData.apiKeys.custom_api_key;
+      const requiresEncryption = !!hasAnyKey;
       
-      if (requiresKeys) {
+      if (requiresEncryption) {
         // Fetch TEE public key if we don't have it
         let pubKey = teePublicKey;
         if (!pubKey) {
@@ -198,10 +219,18 @@ export default function DeployAgentPage() {
         if (formData.modelProvider === 'anthropic') credsToEncrypt.apiKey = formData.apiKeys.anthropic_api_key;
         if (formData.modelProvider === 'custom') credsToEncrypt.apiKey = formData.apiKeys.custom_api_key;
         
-        // Only encrypt if a key was actually provided
-        if (credsToEncrypt.apiKey) {
+        // Add custom secrets
+        formData.customSecrets.forEach(s => {
+          if (s.key && s.value) credsToEncrypt[s.key] = s.value;
+        });
+        
+        // Only encrypt if something was actually provided
+        if (Object.keys(credsToEncrypt).length > 1) {
           encryptedCredentials = await encryptCredentials(pubKey, credsToEncrypt);
-          credentialSchema = { provider: formData.modelProvider, fields: ['apiKey'] };
+          credentialSchema = { 
+            provider: formData.modelProvider, 
+            fields: ['apiKey', ...formData.customSecrets.map(s => s.key).filter(Boolean)] 
+          };
         }
       }
 
@@ -227,7 +256,7 @@ export default function DeployAgentPage() {
       }
 
       // Success!
-      router.push(`/agents/deployed/${data.agent.slug}?deployed=true`);
+      router.push('/projects');
     } catch (err: any) {
       setError(err.message || 'Failed to deploy agent');
     } finally {
@@ -255,7 +284,7 @@ export default function DeployAgentPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Deploy Your Agent</h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               Add your AI agent to the marketplace and earn revenue
             </p>
           </div>
@@ -268,7 +297,7 @@ export default function DeployAgentPage() {
               <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
                 currentStep >= step 
                   ? 'bg-orange-500 text-white' 
-                  : 'bg-gray-200 text-gray-600'
+                  : 'bg-gray-200 text-gray-700'
               }`}>
                 {currentStep > step ? <Check className="w-4 h-4" /> : step}
               </div>
@@ -281,7 +310,7 @@ export default function DeployAgentPage() {
           ))}
         </div>
         
-        <div className="flex justify-between mt-2 text-xs text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-gray-700">
           <span>Basic Info</span>
           <span>Configuration</span>
           <span>Credentials</span>
@@ -309,7 +338,7 @@ export default function DeployAgentPage() {
             
             {/* Agent Name */}
             <div>
-              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="name" className="text-sm font-medium text-gray-800">
                 Agent Name *
               </Label>
               <Input
@@ -326,7 +355,7 @@ export default function DeployAgentPage() {
 
             {/* Short Description */}
             <div>
-              <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="description" className="text-sm font-medium text-gray-800">
                 Short Description *
               </Label>
               <Textarea
@@ -345,7 +374,7 @@ export default function DeployAgentPage() {
 
             {/* Long Description */}
             <div>
-              <Label htmlFor="longDescription" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="longDescription" className="text-sm font-medium text-gray-800">
                 Long Description *
               </Label>
               <Textarea
@@ -360,7 +389,7 @@ export default function DeployAgentPage() {
 
             {/* Category */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-gray-800">
                 Category *
               </Label>
               <div className="grid grid-cols-2 gap-3 mt-2">
@@ -374,7 +403,7 @@ export default function DeployAgentPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <span className="text-base font-semibold">{cat.label}</span>
+                    <span className="text-base font-semibold text-gray-900">{cat.label}</span>
                   </button>
                 ))}
               </div>
@@ -382,7 +411,7 @@ export default function DeployAgentPage() {
 
             {/* Tags */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-gray-800">
                 Tags
               </Label>
               <div className="flex gap-2 mt-2">
@@ -407,7 +436,7 @@ export default function DeployAgentPage() {
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
                     >
                       {tag}
                       <button onClick={() => removeTag(tag)}>
@@ -422,7 +451,7 @@ export default function DeployAgentPage() {
             {/* Icon & Color */}
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="icon" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="icon" className="text-sm font-medium text-gray-800">
                   Icon (Emoji)
                 </Label>
                 <Input
@@ -436,7 +465,7 @@ export default function DeployAgentPage() {
               </div>
               
               <div>
-                <Label htmlFor="color" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="color" className="text-sm font-medium text-gray-800">
                   Brand Color
                 </Label>
                 <div className="flex gap-2 mt-1">
@@ -482,7 +511,7 @@ export default function DeployAgentPage() {
             
             {/* API Endpoint */}
             <div>
-              <Label htmlFor="apiEndpoint" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="apiEndpoint" className="text-sm font-medium text-gray-800">
                 API Endpoint
               </Label>
               <Input
@@ -499,7 +528,7 @@ export default function DeployAgentPage() {
 
             {/* Webhook URL */}
             <div>
-              <Label htmlFor="webhookUrl" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="webhookUrl" className="text-sm font-medium text-gray-800">
                 Webhook URL (Optional)
               </Label>
               <Input
@@ -516,17 +545,17 @@ export default function DeployAgentPage() {
 
             {/* Model Provider */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-gray-800">
                 AI Model Provider *
               </Label>
               <select
                 value={formData.modelProvider}
                 onChange={(e) => handleInputChange('modelProvider', e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
               >
-                <option value="">Select provider...</option>
+                <option value="" className="text-gray-900">Select provider...</option>
                 {MODEL_PROVIDERS.map((provider) => (
-                  <option key={provider.value} value={provider.value}>
+                  <option key={provider.value} value={provider.value} className="text-gray-900">
                     {provider.label}
                   </option>
                 ))}
@@ -535,7 +564,7 @@ export default function DeployAgentPage() {
 
             {/* Model Name */}
             <div>
-              <Label htmlFor="modelName" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="modelName" className="text-sm font-medium text-gray-800">
                 Model Name
               </Label>
               <Input
@@ -550,7 +579,7 @@ export default function DeployAgentPage() {
             {/* Pricing */}
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="pricePerRun" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="pricePerRun" className="text-sm font-medium text-gray-800">
                   Price Per Run (CRD) *
                 </Label>
                 <Input
@@ -569,7 +598,7 @@ export default function DeployAgentPage() {
               </div>
               
               <div>
-                <Label htmlFor="setupFee" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="setupFee" className="text-sm font-medium text-gray-800">
                   Setup Fee (CRD)
                 </Label>
                 <Input
@@ -588,7 +617,7 @@ export default function DeployAgentPage() {
             {/* Input Fields Schema */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-gray-800">
                   Input Fields *
                 </Label>
                 <Button onClick={addInputField} variant="outline" size="sm">
@@ -610,13 +639,13 @@ export default function DeployAgentPage() {
                     <select
                       value={field.type}
                       onChange={(e) => updateInputField(index, 'type', e.target.value)}
-                      className="col-span-2 px-2 py-1 border border-gray-300 rounded-lg text-sm"
+                      className="col-span-2 px-2 py-1 border border-gray-300 rounded-lg text-sm text-gray-900"
                     >
-                      <option value="text">Text</option>
-                      <option value="number">Number</option>
-                      <option value="boolean">Boolean</option>
-                      <option value="array">Array</option>
-                      <option value="object">Object</option>
+                      <option value="text" className="text-gray-900">Text</option>
+                      <option value="number" className="text-gray-900">Number</option>
+                      <option value="boolean" className="text-gray-900">Boolean</option>
+                      <option value="array" className="text-gray-900">Array</option>
+                      <option value="object" className="text-gray-900">Object</option>
                     </select>
                     
                     <Input
@@ -626,7 +655,7 @@ export default function DeployAgentPage() {
                       className="col-span-5"
                     />
                     
-                    <label className="col-span-1 flex items-center gap-1 text-xs">
+                    <label className="col-span-1 flex items-center gap-1 text-xs text-gray-700 font-medium">
                       <input
                         type="checkbox"
                         checked={field.required}
@@ -649,7 +678,7 @@ export default function DeployAgentPage() {
             {/* Example Input/Output */}
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="exampleInput" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="exampleInput" className="text-sm font-medium text-gray-800">
                   Example Input (JSON)
                 </Label>
                 <Textarea
@@ -663,7 +692,7 @@ export default function DeployAgentPage() {
               </div>
               
               <div>
-                <Label htmlFor="exampleOutput" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="exampleOutput" className="text-sm font-medium text-gray-800">
                   Example Output (JSON)
                 </Label>
                 <Textarea
@@ -679,7 +708,7 @@ export default function DeployAgentPage() {
 
             {/* Documentation */}
             <div>
-              <Label htmlFor="readme" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="readme" className="text-sm font-medium text-gray-800">
                 Documentation (Markdown)
               </Label>
               <Textarea
@@ -735,8 +764,8 @@ export default function DeployAgentPage() {
           <div className="space-y-6">
             {formData.modelProvider === 'openai' && (
               <div>
-                <Label htmlFor="openai_api_key" className="text-sm font-medium text-gray-700">
-                  OpenAI API Key *
+                <Label htmlFor="openai_api_key" className="text-sm font-medium text-gray-800">
+                  OpenAI API Key (Optional)
                 </Label>
                 <Input
                   id="openai_api_key"
@@ -746,16 +775,16 @@ export default function DeployAgentPage() {
                   onChange={(e) => handleApiKeyChange('openai_api_key', e.target.value)}
                   className="mt-1 font-mono"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Required for OpenAI model inference. Will be TEE-encrypted.
+                <p className="text-xs text-gray-600 mt-1">
+                  Required for OpenAI model inference if not handled by your endpoint.
                 </p>
               </div>
             )}
 
             {formData.modelProvider === 'anthropic' && (
               <div>
-                <Label htmlFor="anthropic_api_key" className="text-sm font-medium text-gray-700">
-                  Anthropic API Key *
+                <Label htmlFor="anthropic_api_key" className="text-sm font-medium text-gray-800">
+                  Anthropic API Key (Optional)
                 </Label>
                 <Input
                   id="anthropic_api_key"
@@ -765,15 +794,15 @@ export default function DeployAgentPage() {
                   onChange={(e) => handleApiKeyChange('anthropic_api_key', e.target.value)}
                   className="mt-1 font-mono"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Required for Anthropic model inference. Will be TEE-encrypted.
+                <p className="text-xs text-gray-600 mt-1">
+                  Required for Anthropic model inference if not handled by your endpoint.
                 </p>
               </div>
             )}
 
             {formData.modelProvider === 'custom' && (
               <div>
-                <Label htmlFor="custom_api_key" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="custom_api_key" className="text-sm font-medium text-gray-800">
                   Custom Endpoint API Key / Bearer Token (Optional)
                 </Label>
                 <Input
@@ -799,6 +828,51 @@ export default function DeployAgentPage() {
                 </AlertDescription>
               </Alert>
             )}
+
+            {/* Additional Secrets Section */}
+            <div className="pt-6 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Additional Secrets (Optional)</h3>
+                  <p className="text-xs text-gray-500">Add keys for voice, search, or other 3rd party APIs.</p>
+                </div>
+                <Button onClick={addCustomSecret} variant="outline" size="sm">
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add Secret
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.customSecrets.map((secret, index) => (
+                  <div key={index} className="flex gap-3">
+                    <Input
+                      placeholder="Secret Name (e.g. ELEVENLABS_KEY)"
+                      value={secret.key}
+                      onChange={(e) => updateCustomSecret(index, 'key', e.target.value)}
+                      className="flex-1 font-mono text-xs uppercase"
+                    />
+                    <Input
+                      type="password"
+                      placeholder="Value"
+                      value={secret.value}
+                      onChange={(e) => updateCustomSecret(index, 'value', e.target.value)}
+                      className="flex-1 font-mono text-xs"
+                    />
+                    <Button 
+                      onClick={() => removeCustomSecret(index)} 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                {formData.customSecrets.length === 0 && (
+                  <p className="text-[11px] text-gray-400 italic">No additional secrets added.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-between mt-8">
@@ -810,11 +884,7 @@ export default function DeployAgentPage() {
             </Button>
             <Button
               onClick={() => setCurrentStep(4)}
-              disabled={
-                (formData.modelProvider === 'openai' && !formData.apiKeys.openai_api_key) ||
-                (formData.modelProvider === 'anthropic' && !formData.apiKeys.anthropic_api_key) ||
-                formData.modelProvider === 'multiple'
-              }
+              disabled={formData.modelProvider === 'multiple'}
               className="bg-orange-500 hover:bg-orange-600"
             >
               Next: Review
@@ -844,12 +914,12 @@ export default function DeployAgentPage() {
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
                   {formData.name || 'Your Agent Name'}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-700 mb-4">
                   {formData.description || 'Agent description will appear here'}
                 </p>
                 
                 <div className="flex items-center gap-4 text-sm">
-                  <span className="px-3 py-1 bg-white rounded-full text-gray-700 font-medium">
+                  <span className="px-3 py-1 bg-white rounded-full text-gray-800 font-medium">
                     {CATEGORIES.find(c => c.value === formData.category)?.label || 'Category'}
                   </span>
                   <span className="text-orange-600 font-bold">
@@ -863,33 +933,33 @@ export default function DeployAgentPage() {
           {/* Summary */}
           <div className="space-y-4 mb-6">
             <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="text-gray-600">Category</span>
+              <span className="text-gray-700">Category</span>
               <span className="font-medium text-gray-900">
                 {CATEGORIES.find(c => c.value === formData.category)?.label}
               </span>
             </div>
             
             <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="text-gray-600">Model Provider</span>
+              <span className="text-gray-700">Model Provider</span>
               <span className="font-medium text-gray-900">
                 {MODEL_PROVIDERS.find(p => p.value === formData.modelProvider)?.label}
               </span>
             </div>
             
             <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="text-gray-600">Price Per Run</span>
+              <span className="text-gray-700">Price Per Run</span>
               <span className="font-medium text-gray-900">{formData.pricePerRun} CRD</span>
             </div>
             
             <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="text-gray-600">Your Earnings (90%)</span>
+              <span className="text-gray-700">Your Earnings (90%)</span>
               <span className="font-bold text-green-600">
                 {formData.pricePerRun ? (parseFloat(formData.pricePerRun) * 0.9).toFixed(2) : '0.00'} CRD
               </span>
             </div>
             
             <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="text-gray-600">Input Fields</span>
+              <span className="text-gray-700">Input Fields</span>
               <span className="font-medium text-gray-900">
                 {formData.inputFields.filter(f => f.name).length} fields
               </span>
