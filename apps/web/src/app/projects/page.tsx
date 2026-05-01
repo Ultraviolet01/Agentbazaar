@@ -54,23 +54,23 @@ export default function ProjectsPage() {
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pt-10">
-        <div className="space-y-4">
-          <div className="flex items-center space-x-5 text-orange-500">
-            <div className="w-16 h-16 rounded-[24px] bg-orange-100 flex items-center justify-center border border-orange-200 shadow-sm transition-all hover:scale-105">
-              <FolderRoot size={32} strokeWidth={2.5} />
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-orange-600 uppercase tracking-[0.3em]">Operational Core</span>
             </div>
-            <div>
-                <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 tracking-tight uppercase leading-none">My Console</h1>
-                <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.3em] mt-3">Projects & Deployed Agents</p>
-            </div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tighter uppercase leading-[0.85]">
+              My <span className="text-orange-500">Console.</span>
+            </h1>
           </div>
-          <p className="text-gray-700 text-lg max-w-2xl leading-relaxed font-semibold">
+          <p className="text-gray-700 text-base md:text-lg max-w-2xl leading-relaxed font-semibold">
             Manage your TEE-verified autonomous agents in a single command center.
           </p>
         </div>
         <Button 
             onClick={() => setCreateModalOpen(true)}
-            className="rounded-2xl h-14 px-10 bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all"
+            className="rounded-2xl h-14 px-10 bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg hover:shadow-xl transition-all w-full md:w-auto"
         >
             <Plus size={22} className="mr-2.5" strokeWidth={3} />
             CREATE PROJECT
@@ -133,16 +133,16 @@ export default function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <Card className="p-12 border-2 border-dashed border-gray-100 rounded-[32px] flex flex-col items-center justify-center text-center space-y-4">
+          <Card className="p-8 md:p-12 border-2 border-dashed border-gray-100 rounded-[24px] md:rounded-[32px] flex flex-col items-center justify-center text-center space-y-4 shadow-sm bg-white">
             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center">
               <Rocket className="w-8 h-8 text-gray-300" />
             </div>
             <div>
-              <p className="text-gray-900 font-bold">No Agents Deployed</p>
-              <p className="text-sm text-gray-700">Deploy your first TEE-verified agent to start earning.</p>
+              <p className="text-gray-900 font-bold text-lg">No Agents Deployed</p>
+              <p className="text-sm text-gray-600 max-w-sm mt-1">Deploy your first TEE-verified agent to start earning.</p>
             </div>
             <Link href="/deploy">
-              <Button size="sm" className="rounded-xl bg-orange-500 hover:bg-orange-600 font-bold shadow-md">
+              <Button size="sm" className="rounded-xl bg-orange-500 hover:bg-orange-600 font-bold shadow-md mt-4">
                 GET STARTED
               </Button>
             </Link>
