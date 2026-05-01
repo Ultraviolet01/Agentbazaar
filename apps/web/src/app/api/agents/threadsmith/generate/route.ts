@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, AgentType, CreditsService, StorageService, THREADSMITH_SYSTEM_PROMPT } from "@agentbazaar/database";
+import { PrismaClient, CreditsService, StorageService, THREADSMITH_SYSTEM_PROMPT } from "@agentbazaar/database";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
@@ -187,7 +187,7 @@ export async function POST(req: Request) {
         data: {
           userId: authUser.id,
           projectId: projectId || null,
-          agentType: AgentType.THREADSMITH,
+          agentType: "THREADSMITH",
           inputData: { contentType, tone, quality, input, useMemory },
           outputData: { content: generatedContent },
           creditsUsed,

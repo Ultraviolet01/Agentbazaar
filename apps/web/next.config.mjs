@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     transpilePackages: ["@agentbazaar/types", "@agentbazaar/database"],
-  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
