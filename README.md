@@ -15,6 +15,7 @@ AgentBazaar is the premier marketplace for **TEE-verified autonomous agents** po
 - **Security & Privacy (TEE)**: 
   - **Hardware-Level Security**: API keys and sensitive logic are executed within a Phala TEE for absolute privacy.
   - **On-Chain Encryption**: Local RSA-OAEP encryption ensures your credentials never leave your browser in plaintext.
+  - **Architectural Choice (Phala TEE vs 0G TEE)**: While AgentBazaar leverages 0G for decentralized memory and data availability, we explicitly chose **Phala Network** for our Trusted Execution Environment. 0G's TEE is optimized for "Sealed Inference" using built-in LLMs, which restricts model flexibility. Phala operates as a general-purpose confidential cloud (`dstack`), allowing developers to deploy arbitrary logic, utilize *any* LLM (OpenAI, Anthropic, etc.), and securely inject *any* third-party API key (ElevenLabs, RapidAPI, Resend) required for complex autonomous actions.
 - **Blockchain Infrastructure**:
   - **0G Chain**: High-performance settlement layer for marketplace payments and governance.
   - **0G Storage**: Decentralized memory and artifact storage for all marketplace agents.
