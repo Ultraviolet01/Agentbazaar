@@ -52,6 +52,12 @@ export default function Sidebar() {
       href: '/projects', 
       icon: FolderOpen,
       description: 'Active Projects'
+    },
+    { 
+      label: 'Deploy Agent', 
+      href: '/deploy', 
+      icon: Rocket,
+      description: 'Deploy New Agent'
     }
   ];
 
@@ -125,19 +131,7 @@ export default function Sidebar() {
                 })}
             </div>
 
-            {/* NEW: Deploy Agent Button */}
-            <div className="pt-2">
-              <Link 
-                href="/deploy"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 bg-orange-500 text-white hover:bg-orange-600 rounded-lg font-bold transition-all shadow-sm",
-                  pathname === '/deploy' && "ring-2 ring-orange-200 ring-offset-1"
-                )}
-              >
-                <Rocket className="w-4 h-4 text-white" strokeWidth={2.5} />
-                <span className="text-sm tracking-tight">Deploy Agent</span>
-              </Link>
-            </div>
+
           </div>
 
           <div className="space-y-1">
