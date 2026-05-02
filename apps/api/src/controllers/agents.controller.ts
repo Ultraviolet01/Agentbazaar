@@ -213,3 +213,17 @@ export const setupLaunchWatch = async (req: Request, res: Response) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const getMyAgents = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const agents = await prisma.deployedAgent.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" }
+    });
+    res.json(agents);
+  } catch (error: any) {
+    console.error("GetMyAgents Error:", error);
+    res.status(500).json({ error: "Failed to fetch your agents" });
+  }
+};

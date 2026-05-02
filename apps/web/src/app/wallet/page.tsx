@@ -176,15 +176,7 @@ export default function WalletPage() {
 
     try {
       const timestamp = Date.now();
-      const message = `AgentBazaar Wallet Verification
-
-I am the owner of this wallet and I authorize deposits to AgentBazaar.
-
-Wallet: ${walletAddress}
-Timestamp: ${timestamp}
-Action: Authorize Deposit
-
-This signature proves ownership and does not authorize any transactions.`;
+      const message = `AgentBazaar Wallet Verification\n\nI am the owner of this wallet and I authorize deposits to AgentBazaar.\n\nWallet: ${walletAddress}\nTimestamp: ${timestamp}\nAction: Authorize Deposit\n\nThis signature proves ownership and does not authorize any transactions.`;
 
       console.log('Requesting signature...');
 
