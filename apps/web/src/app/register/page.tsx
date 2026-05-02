@@ -10,9 +10,11 @@ import { ArrowRight, Mail, Lock, User, XCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import api from '@/lib/api';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/lib/store/auth.store';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -40,18 +42,21 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      await api.post('/auth/register', {
+      const { data } = await api.post('/auth/register', {
         email: formData.email,
         username: formData.username,
         password: formData.password
       });
 
+      setAuth(data.user);
+
       toast.success('Account Created', {
-        description: 'Please verify your email to continue.'
+        description: 'Welcome to AgentBazaar!'
       });
 
-      // Navigate to login flow to await verification
-      router.push('/login');
+      // Navigate straight to onboarding
+      router.push('/onboarding');
+      router.refresh();
     } catch (err: any) {
       const message = err.response?.data?.error || err.message || 'Signup failed';
       setError(message);

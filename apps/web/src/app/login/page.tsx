@@ -31,11 +31,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.post("/auth/login", { email, password });
       setAuth(data.user);
-      if (data.user.onboardingCompleted === false) {
-        router.push("/onboarding");
-      } else {
-        router.push("/");
-      }
+      router.push("/");
       router.refresh(); // Ensure sidebar updates
     } catch (err: any) {
       setError(err.response?.data?.error || "Login failed. Please check your credentials.");
