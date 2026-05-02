@@ -17,13 +17,13 @@ import api from '@/lib/api';
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [credits] = useState(250); // Free starting credits
+  const [credits] = useState(20); // Free starting credits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const steps = [
     {
       title: 'Welcome to AgentBazaar',
-      description: 'You\'ve been credited 250 CRD to get started',
+      description: 'You\'ve been credited 20 CRD to get started',
       icon: Check
     },
     {

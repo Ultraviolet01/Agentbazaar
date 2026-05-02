@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, AgentType, CreditsService, StorageService, THREADSMITH_SYSTEM_PROMPT } from "@agentbazaar/database";
-import Anthropic from "@anthropic-ai/sdk";
+import { PrismaClient, CreditsService, StorageService, THREADSMITH_SYSTEM_PROMPT } from "@agentbazaar/database";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
 const prisma = new PrismaClient();
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 const storageService = new StorageService();
 const creditsService = new CreditsService(prisma);
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
@@ -25,6 +20,43 @@ async function getAuthUser() {
   } catch (error) {
     console.error("JWT Verify Error:", error);
     return null;
+  }
+}
+
+/**
+ * Pure fetch-based Anthropic API call.
+ * Avoids the @anthropic-ai/sdk which has connection issues on Vercel serverless.
+ */
+async function callAnthropic(apiKey: string, model: string, systemPrompt: string, userMessage: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000); // 25s timeout (Vercel limit is 30s)
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey.trim(),
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMessage }],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Anthropic ${response.status}: ${errorBody}`);
+    }
+
+    const data = await response.json();
+    return data.content?.[0]?.text || "";
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -47,13 +79,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Input context is required" }, { status: 400 });
     }
 
-    // Diagnostic check
-    const diagnostics = {
-      hasAnthropic: !!process.env.ANTHROPIC_API_KEY,
-      hasDbUrl: !!process.env.AGENTBAZAAR_DB_URL,
-      hasStorageKey: !!process.env.OG_PRIVATE_KEY,
-    };
-
     // 1. Credit Calculation (Premium: 5 CRD, Standard: 2 CRD)
     const creditsUsed = quality === 'premium' ? 5 : 2;
 
@@ -71,7 +96,6 @@ export async function POST(req: Request) {
       }, { status: 402 });
     }
 
-
     // 2. Context Gathering
     let context = input || "";
     if (useMemory && projectId) {
@@ -83,93 +107,51 @@ export async function POST(req: Request) {
       context += "\n\nProject History:\n" + memories.map((m: any) => `${m.memoryType}: ${JSON.stringify(m.content)}`).join("\n");
     }
 
-    // 3. AI Generation
+    // 3. AI Generation — Pure fetch, no SDK
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "AI configuration missing (API Key)" }, { status: 500 });
     }
 
-    console.log(`[Diagnostic] API Key Prefix: ${apiKey.substring(0, 12)}... Length: ${apiKey.length}`);
-    console.log(`[Diagnostic] Model Tier: ${quality}`);
+    const trimmedKey = apiKey.trim();
+    console.log(`[ThreadSmith] Key prefix: ${trimmedKey.substring(0, 15)}... len=${trimmedKey.length} quality=${quality}`);
 
-    let generatedContent = "";
     const modelsToTry = [
-      "claude-3-5-sonnet-latest",
+      "claude-sonnet-4-20250514",
       "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-20241022",
       "claude-3-5-sonnet-20240620",
+      "claude-3-haiku-20240307",
+      "claude-3-sonnet-20240229",
       "claude-3-opus-20240229",
-      "claude-3-haiku-20240307"
     ];
 
+    const userMessage = `ContentType: ${contentType}\nTone: ${tone}\nContext: ${context}`;
+    let generatedContent = "";
     let lastError: any = null;
 
-    // Try RAW FETCH to bypass potential SDK issues
-    console.log("[Diagnostic] Attempting RAW FETCH with model: claude-3-5-sonnet-20241022");
-    try {
-      const rawResponse = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-sonnet-20241022",
-          max_tokens: 1500,
-          system: THREADSMITH_SYSTEM_PROMPT,
-          messages: [{ 
-            role: "user", 
-            content: `ContentType: ${contentType}\nTone: ${tone}\nContext: ${context}` 
-          }]
-        })
-      });
-
-      if (rawResponse.ok) {
-        const rawData = await rawResponse.json();
-        generatedContent = rawData.content[0].text;
-        console.log("[Diagnostic] RAW FETCH Success!");
-      } else {
-        const errorText = await rawResponse.text();
-        console.error(`[Diagnostic] RAW FETCH Failed: ${rawResponse.status} ${errorText}`);
-        lastError = { message: `Raw Anthropic Error: ${errorText}`, status: rawResponse.status, raw: errorText };
-        throw new Error(errorText);
-      }
-    } catch (fetchError: any) {
-      console.error("[Diagnostic] Falling back to SDK after fetch fail:", fetchError.message);
-      const rawErrorText = lastError?.raw || fetchError.message;
-      
-      for (const model of modelsToTry) {
-        if (generatedContent) break;
-        
-        try {
-          const response = await anthropic.messages.create({
-            model: model,
-            max_tokens: 1500,
-            system: THREADSMITH_SYSTEM_PROMPT,
-            messages: [{ 
-              role: "user", 
-              content: `ContentType: ${contentType}\nTone: ${tone}\nContext: ${context}` 
-            }],
-          });
-          
-          generatedContent = response.content[0].type === 'text' ? response.content[0].text : "";
-        } catch (aiError: any) {
-          lastError = aiError;
-        }
+    for (const model of modelsToTry) {
+      if (generatedContent) break;
+      try {
+        console.log(`[ThreadSmith] Trying model: ${model}`);
+        generatedContent = await callAnthropic(trimmedKey, model, THREADSMITH_SYSTEM_PROMPT, userMessage);
+        console.log(`[ThreadSmith] Success with model: ${model}`);
+      } catch (err: any) {
+        console.error(`[ThreadSmith] Failed with model ${model}:`, err.message);
+        lastError = err;
       }
     }
 
     if (!generatedContent && lastError) {
       return NextResponse.json({ 
-        error: `AI Engine Exhausted: ${lastError.message || "Unknown AI error"}`,
-        details: lastError.status ? `Status ${lastError.status}` : "No status code",
+        error: `AI Engine Exhausted: ${lastError.message}`,
         debug: {
-          keyPrefix: apiKey ? `${apiKey.substring(0, 12)}...` : "missing",
-          keyLength: apiKey?.length || 0,
+          keyPrefix: `${trimmedKey.substring(0, 15)}...`,
+          keyLength: trimmedKey.length,
           attemptedModels: modelsToTry,
-          rawError: lastError?.raw || lastError?.message || "No raw details"
+          errorMessage: lastError.message,
         },
-        suggestion: "Verify that the API Key prefix/length matches your dashboard and that you have access to Claude 3 models."
+        suggestion: "Verify your Anthropic API key is valid and has sufficient credits at console.anthropic.com"
       }, { status: 500 });
     }
 
@@ -177,7 +159,7 @@ export async function POST(req: Request) {
       throw new Error("Empty response from AI engine");
     }
 
-    // 4. Deduct credits (Move here to ensure deduction only on success)
+    // 4. Deduct credits
     await creditsService.deductCredits(authUser.id, creditsUsed, `ThreadSmith Generation: ${contentType}`);
 
     // 5. Upload to 0G Storage
@@ -196,17 +178,16 @@ export async function POST(req: Request) {
       artifactCid = uploadResult.cid as string;
     } catch (storageError: any) {
       console.warn("Storage upload failed, continuing without CID", storageError);
-      // We don't fail the whole request if storage fails
     }
 
-    // 5. Persistence
+    // 6. Persistence
     let run;
     try {
       run = await prisma.agentRun.create({
         data: {
           userId: authUser.id,
           projectId: projectId || null,
-          agentType: AgentType.THREADSMITH,
+          agentType: "THREADSMITH",
           inputData: { contentType, tone, quality, input, useMemory },
           outputData: { content: generatedContent },
           creditsUsed,
@@ -216,14 +197,13 @@ export async function POST(req: Request) {
       });
     } catch (dbError) {
       console.error("Failed to persist agent run", dbError);
-      // Still return the content to the user
       return NextResponse.json({ 
         content: generatedContent, 
         warning: "Persistence failed" 
       });
     }
 
-    // 6. Project Memory
+    // 7. Project Memory
     if (projectId) {
       await prisma.projectMemory.create({
         data: {

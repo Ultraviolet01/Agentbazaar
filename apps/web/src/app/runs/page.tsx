@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Zap, Search, Clock, ExternalLink, Cpu, HardDrive, BarChart3, Rocket } from "lucide-react";
+import { Zap, Search, Clock, ExternalLink, Cpu, HardDrive, BarChart3, Rocket, ShieldCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -72,6 +72,15 @@ export default function RunsPage() {
                                     <span>CID: {run.artifactCid?.slice(0, 10)}...</span>
                                 </div>
                             </div>
+                            
+                            {run.deployedAgent?.teeAttestation && (
+                              <div className="flex items-center space-x-2 mt-2 px-3 py-1 bg-green-50 border border-green-100 rounded-full w-fit">
+                                <ShieldCheck size={14} className="text-green-600" />
+                                <span className="text-[10px] font-bold uppercase text-green-700 tracking-widest">
+                                  TEE Verified Execution
+                                </span>
+                              </div>
+                            )}
                         </div>
                     </div>
 

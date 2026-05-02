@@ -176,15 +176,7 @@ export default function WalletPage() {
 
     try {
       const timestamp = Date.now();
-      const message = `AgentBazaar Wallet Verification
-
-I am the owner of this wallet and I authorize deposits to AgentBazaar.
-
-Wallet: ${walletAddress}
-Timestamp: ${timestamp}
-Action: Authorize Deposit
-
-This signature proves ownership and does not authorize any transactions.`;
+      const message = `AgentBazaar Wallet Verification\n\nI am the owner of this wallet and I authorize deposits to AgentBazaar.\n\nWallet: ${walletAddress}\nTimestamp: ${timestamp}\nAction: Authorize Deposit\n\nThis signature proves ownership and does not authorize any transactions.`;
 
       console.log('Requesting signature...');
 
@@ -765,7 +757,7 @@ This signature proves ownership and does not authorize any transactions.`;
             <div className="p-0">
               
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-gray-50 bg-gray-50/30">
+              <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-5 border-b border-gray-50 bg-gray-50/30">
                 <div className="col-span-3 text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono">
                   Originator
                 </div>
@@ -793,9 +785,10 @@ This signature proves ownership and does not authorize any transactions.`;
                   transactions.map((tx) => (
                     <div 
                       key={tx.id}
-                      className="grid grid-cols-12 gap-4 px-8 py-6 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors group"
+                      className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 px-5 py-5 md:px-8 md:py-6 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors group"
                     >
-                      <div className="col-span-3">
+                      <div className="md:col-span-3 flex justify-between md:block items-center">
+                        <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Type</span>
                         <div className={`inline-flex px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
                           tx.type === 'deposit' 
                             ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
@@ -806,11 +799,12 @@ This signature proves ownership and does not authorize any transactions.`;
                           {tx.type}
                         </div>
                       </div>
-                      <div className="col-span-5">
+                      <div className="md:col-span-5 py-2 md:py-0">
                         <p className="text-sm font-bold text-gray-800 tracking-tight leading-tight mb-1 group-hover:text-orange-600 transition-colors">{tx.description}</p>
                         <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{tx.status}</p>
                       </div>
-                      <div className="col-span-2 text-right self-center">
+                      <div className="md:col-span-2 md:text-right self-center flex justify-between md:block items-center w-full md:w-auto">
+                        <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Yield</span>
                         <p className={`text-sm font-black ${
                           tx.type === 'deposit' ? 'text-emerald-500' : 'text-red-500'
                         }`}>
@@ -818,7 +812,8 @@ This signature proves ownership and does not authorize any transactions.`;
                           <span className="text-[10px] ml-1 font-bold opacity-40">CRD</span>
                         </p>
                       </div>
-                      <div className="col-span-2 text-right self-center">
+                      <div className="md:col-span-2 md:text-right self-center flex justify-between md:block items-center w-full md:w-auto mt-2 md:mt-0">
+                        <span className="md:hidden text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</span>
                         <p className="text-xs font-bold text-gray-400 font-mono">{formatDate(tx.date)}</p>
                       </div>
                     </div>

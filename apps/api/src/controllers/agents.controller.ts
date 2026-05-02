@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, AgentType, CreditsService, StorageService, SCAMSNIFF_SYSTEM_PROMPT, THREADSMITH_SYSTEM_PROMPT } from "@agentbazaar/database";
+import { PrismaClient, CreditsService, StorageService, SCAMSNIFF_SYSTEM_PROMPT, THREADSMITH_SYSTEM_PROMPT } from "@agentbazaar/database";
 import Anthropic from "@anthropic-ai/sdk";
 import { MonitoringEngine } from "../services/monitoring.engine";
 
@@ -62,7 +62,7 @@ export const runScamSniff = async (req: Request, res: Response) => {
         data: {
           userId,
           projectId,
-          agentType: AgentType.SCAMSNIFF,
+          agentType: "SCAMSNIFF",
           inputData: { url, extractedData },
           outputData: analysis as any,
           creditsUsed: 1,
@@ -156,7 +156,7 @@ export const runThreadSmith = async (req: Request, res: Response) => {
       data: {
         userId,
         projectId: projectId || null,
-        agentType: AgentType.THREADSMITH,
+        agentType: "THREADSMITH",
         inputData: { contentType, tone, length, customInput, useMemory },
         outputData: { content: generatedContent },
         creditsUsed,
@@ -211,5 +211,19 @@ export const setupLaunchWatch = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("LaunchWatch Error:", error);
     res.status(400).json({ error: error.message });
+  }
+};
+
+export const getMyAgents = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const agents = await prisma.deployedAgent.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" }
+    });
+    res.json(agents);
+  } catch (error: any) {
+    console.error("GetMyAgents Error:", error);
+    res.status(500).json({ error: "Failed to fetch your agents" });
   }
 };

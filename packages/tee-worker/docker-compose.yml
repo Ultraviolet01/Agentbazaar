@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  tee-worker:
+    image: ghcr.io/ultraviolet01/agentbazaar-tee-worker:latest
+    ports:
+      - "4100:4100"
+    environment:
+      - PORT=4100
+      - TEE_WORKER_API_KEY=dev-key
+    restart: unless-stopped

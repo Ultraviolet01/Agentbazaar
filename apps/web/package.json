@@ -10,6 +10,7 @@
     "postinstall": "prisma generate --schema=../../packages/database/prisma/schema.prisma"
   },
   "dependencies": {
+    "@0gfoundation/0g-storage-ts-sdk": "^1.2.8",
     "@agentbazaar/database": "workspace:*",
     "@agentbazaar/types": "workspace:*",
     "@anthropic-ai/sdk": "^0.20.9",

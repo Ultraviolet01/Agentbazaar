@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -10,60 +10,61 @@ datasource db {
 }
 
 model User {
-  id                  String        @id @default(cuid())
-  email               String        @unique
-  username            String        @unique
+  id                  String             @id @default(cuid())
+  email               String             @unique
+  username            String             @unique
   passwordHash        String
-  credits             Float         @default(20)
-  emailVerified       Boolean       @default(false)
+  credits             Float              @default(20)
+  emailVerified       Boolean            @default(false)
   verificationToken   String?
   refreshToken        String?
   resetToken          String?
   resetTokenExpires   DateTime?
-  onboardingCompleted Boolean       @default(false)
+  onboardingCompleted Boolean            @default(false)
   walletAddress       String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   agentRuns           AgentRun[]
   projects            Project[]
   transactions        Transaction[]
   monitoringJobs      MonitoringJob[]
   launchWatchAlerts   LaunchWatchAlert[]
+  deployedAgents      DeployedAgent[] // NEW
 }
 
 model MonitoringJob {
-  id               String   @id @default(cuid())
-  userId           String
-  type             String   // 'project', 'token_milestone', 'crypto_news'
-  email            String
-  status           String   @default("active") // 'active', 'paused', 'completed'
-  setupCost        Float
-  
+  id        String @id @default(cuid())
+  userId    String
+  type      String // 'project', 'token_milestone', 'crypto_news'
+  email     String
+  status    String @default("active") // 'active', 'paused', 'completed'
+  setupCost Float
+
   // Project monitoring data
   projectUrl       String?
-  monitorSocial    Boolean  @default(false)
-  monitorWebsite   Boolean  @default(false)
-  monitorSentiment Boolean  @default(false)
-  checkFrequency   String?  // 'hourly', 'daily', 'weekly'
-  
+  monitorSocial    Boolean @default(false)
+  monitorWebsite   Boolean @default(false)
+  monitorSentiment Boolean @default(false)
+  checkFrequency   String? // 'hourly', 'daily', 'weekly'
+
   // Token milestone data
-  contractAddress  String?
-  tokenSymbol      String?
-  currentFDV       Float?
-  targetFDV        Float?
-  
+  contractAddress String?
+  tokenSymbol     String?
+  currentFDV      Float?
+  targetFDV       Float?
+
   // News data
-  newsTopics       String   @default("[]") // JSON array as string (SQLite compatibility)
-  newsFrequency    String?  // 'realtime', 'daily', 'weekly'
-  
+  newsTopics    String  @default("[]") // JSON array as string (SQLite compatibility)
+  newsFrequency String? // 'realtime', 'daily', 'weekly'
+
   // Tracking
-  nextCheck        DateTime?
-  lastCheck        DateTime?
-  totalChecks      Int      @default(0)
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  user             User     @relation(fields: [userId], references: [id])
+  nextCheck   DateTime?
+  lastCheck   DateTime?
+  totalChecks Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Project {
@@ -85,18 +86,24 @@ model Project {
 }
 
 model AgentRun {
-  id          String   @id @default(cuid())
-  userId      String
-  projectId   String?
-  agentType   AgentType
+  id              String         @id @default(cuid())
+  userId          String
+  projectId       String?
+  agentType       String // 'scamsniff', 'threadsmith', 'launchwatch', or custom slug
+  deployedAgentId String? // NEW - for custom agents
+  deployedAgent   DeployedAgent? @relation(fields: [deployedAgentId], references: [id])
+
   creditsUsed Float
-  status      String
   inputData   Json
   outputData  Json?
+  status      String  @default("pending")
   artifactCid String?
-  createdAt   DateTime @default(now())
-  project     Project? @relation(fields: [projectId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
 }
 
 model Transaction {
@@ -166,4 +173,127 @@ enum AlertSeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+// NEW MODEL: Deployed Agents
+model DeployedAgent {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Basic Info
+  name            String
+  slug            String   @unique
+  description     String
+  longDescription String   @db.Text
+  category        String // 'security', 'content', 'monitoring', 'analytics', 'automation'
+  tags            String[] // ['defi', 'nft', 'social', etc.]
+
+  // Technical Details
+  apiEndpoint   String?
+  webhookUrl    String?
+  modelProvider String // 'anthropic', 'openai', 'custom', 'multiple'
+  modelName     String?
+
+  // Pricing
+  pricePerRun Float // in CRD
+  setupFee    Float @default(0)
+
+  // TEE-Based Credentials
+  requiresCredentials Boolean @default(false)
+  credentialSchema    Json? // What credentials this agent needs
+
+  // 0G Network Integration (TEE)
+  teeCredentialId String? // Reference to TEE-encrypted credential blob
+  daLogHash       String? // 0G DA hash for audit trail
+  teeAttestation  String? // TEE attestation proof (verifiable)
+
+  // Credential Metadata (NOT the actual keys)
+  credentialMetadata Json? // {provider: 'openai', model: 'gpt-4', cost_per_1k: 0.03}
+  credentialStatus   String @default("pending") // 'pending', 'active', 'revoked', 'expired'
+
+  // Cost Tracking
+  totalApiCost Float @default(0) // Creator's actual API costs
+  profitMargin Float @default(0) // Revenue - API costs
+
+  // Capabilities
+  inputSchema  Json // JSON schema for inputs
+  outputSchema Json // JSON schema for outputs
+  capabilities String[] // ['text', 'image', 'audio', 'video', 'code']
+
+  // Branding
+  icon        String // emoji or URL
+  color       String // hex color
+  coverImage  String?
+  screenshots String[] // array of URLs
+
+  // Documentation
+  readme   String  @db.Text // markdown
+  examples Json // example inputs/outputs
+  videoUrl String? // demo video
+
+  // Status & Review
+  status      String  @default("pending") // 'pending', 'approved', 'rejected', 'live', 'paused'
+  reviewNotes String?
+  isVerified  Boolean @default(false)
+  isFeatured  Boolean @default(false)
+
+  // Analytics
+  totalRuns     Int    @default(0)
+  totalRevenue  Float  @default(0)
+  averageRating Float?
+  reviewCount   Int    @default(0)
+
+  // 0G Network Integration (Storage)
+  storageNodeId String? // 0G Storage node where encrypted blob is stored
+  memoryHash    String? // 0G Memory reference
+
+  // Timestamps
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  approvedAt DateTime?
+
+  // Relations
+  runs    AgentRun[]
+  reviews AgentReview[]
+}
+
+// NEW MODEL: Agent Reviews
+model AgentReview {
+  id      String        @id @default(cuid())
+  agentId String
+  agent   DeployedAgent @relation(fields: [agentId], references: [id])
+  userId  String
+
+  rating  Int // 1-5 stars
+  title   String?
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// NEW: TEE Credential Usage Logs (stored on 0G DA)
+model CredentialUsageLog {
+  id              String @id @default(cuid())
+  agentId         String
+  teeCredentialId String
+
+  // Usage Metadata (NO sensitive data)
+  usedAt        DateTime @default(now())
+  apiProvider   String // 'openai', 'anthropic', etc.
+  tokensUsed    Int? // For LLM APIs
+  estimatedCost Float? // Calculated cost
+
+  // 0G DA Integration
+  daHash        String // Hash of this log on 0G DA
+  daBlockHeight BigInt // 0G DA block height
+
+  // Cryptographic Proof
+  teeProof String? // ZK proof that execution happened in TEE
+
+  createdAt DateTime @default(now())
+
+  @@index([agentId, usedAt])
+  @@index([teeCredentialId])
 }

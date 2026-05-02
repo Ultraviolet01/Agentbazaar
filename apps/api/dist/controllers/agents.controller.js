@@ -60,7 +60,7 @@ const runScamSniff = async (req, res) => {
                 data: {
                     userId,
                     projectId,
-                    agentType: database_1.AgentType.SCAMSNIFF,
+                    agentType: "SCAMSNIFF",
                     inputData: { url, extractedData },
                     outputData: analysis,
                     creditsUsed: 1,
@@ -145,7 +145,7 @@ const runThreadSmith = async (req, res) => {
             data: {
                 userId,
                 projectId: projectId || null,
-                agentType: database_1.AgentType.THREADSMITH,
+                agentType: "THREADSMITH",
                 inputData: { contentType, tone, length, customInput, useMemory },
                 outputData: { content: generatedContent },
                 creditsUsed,

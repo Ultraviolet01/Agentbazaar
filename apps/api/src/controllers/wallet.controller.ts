@@ -52,10 +52,13 @@ export const verifySignature = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const recoveredAddress = verifyMessage(message, signature);
+    // Normalize line endings to prevent mismatches between Windows/Unix
+    const normalizedMessage = message.replace(/\r\n/g, "\n");
+
+    const recoveredAddress = verifyMessage(normalizedMessage, signature);
     const verified = recoveredAddress.toLowerCase() === address.toLowerCase();
 
-    console.log(`Signature verification for ${address}: ${verified}`);
+    console.log(`Signature verification for ${address}: ${verified} (Recovered: ${recoveredAddress})`);
 
     res.json({ verified });
   } catch (error) {

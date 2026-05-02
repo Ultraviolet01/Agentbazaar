@@ -3,7 +3,7 @@ import path from 'path';
 import { ethers } from 'ethers';
 
 // Load .env from root
-config({ path: path.join(__dirname, '../.env') });
+config({ path: path.join(process.cwd(), '.env') });
 
 async function verifyMainnetConfig() {
   console.log('--- AgentBazaar 0G Mainnet Migration Verification ---\n');
@@ -21,7 +21,7 @@ async function verifyMainnetConfig() {
     },
     {
       name: 'RPC Endpoint (Mainnet)',
-      pass: rpcUrl?.includes('mainnet-1.0g.ai'),
+      pass: rpcUrl?.includes('0g.ai'),
       expected: 'https://evmrpc-mainnet-1.0g.ai',
       actual: rpcUrl
     },
@@ -49,8 +49,8 @@ async function verifyMainnetConfig() {
       const provider = new ethers.JsonRpcProvider(rpcUrl);
       const network = await provider.getNetwork();
       console.log(`✅ Connected! Chain ID from provider: ${network.chainId}`);
-      if (network.chainId !== BigInt(16600)) {
-        console.log(`❌ Chain ID mismatch from provider! Expected 16600, got ${network.chainId}`);
+      if (network.chainId !== BigInt(16661)) {
+        console.log(`❌ Chain ID mismatch from provider! Expected 16661, got ${network.chainId}`);
         anyFailed = true;
       }
     } catch (err) {

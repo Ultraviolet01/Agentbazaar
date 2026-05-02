@@ -109,7 +109,7 @@ export default function Marketplace() {
   });
 
   return (
-    <div className="py-12 px-6 md:px-10 max-w-7xl mx-auto min-h-screen bg-[var(--background-secondary)] relative">
+    <div className="py-8 md:py-12 px-4 md:px-10 max-w-7xl mx-auto min-h-screen bg-[var(--background-secondary)] relative">
       
       {/* Background Ambience */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-50/20 blur-[130px] rounded-full pointer-events-none -z-10" />
@@ -121,12 +121,12 @@ export default function Marketplace() {
           <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent-green)] shadow-[0_0_10px_rgba(16,185,129,0.3)] animate-pulse" />
           <span className="text-[11px] font-black text-[var(--text-muted)] uppercase tracking-[0.4em]">Mainnet Deployment Active</span>
         </div>
-        <h1 className="text-6xl md:text-7xl font-bold text-[var(--text-primary)] tracking-tighter leading-[0.9] mb-10 uppercase">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--text-primary)] tracking-tighter leading-[0.9] mb-6 md:mb-10 uppercase">
           Agent
           <br />
           <span className="text-[var(--accent-orange)]">Marketplace.</span>
         </h1>
-        <p className="text-xl text-[var(--text-secondary)] max-w-2xl font-semibold leading-relaxed">
+        <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl font-semibold leading-relaxed">
           Discover, deploy, and scale AI-native autonomous agents powered by 0G&apos;s modular data layer. Verifiable memory, permanent artifacts.
         </p>
       </div>
@@ -139,58 +139,58 @@ export default function Marketplace() {
             placeholder="Search decentralized protocol nodes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-16 bg-[var(--background-card)] border border-[var(--border-subtle)] pl-16 pr-8 text-sm font-bold text-[var(--text-primary)] placeholder:text-[var(--text-muted)] rounded-[24px] focus:outline-none focus:ring-4 focus:ring-orange-50 focus:border-[var(--accent-orange)] shadow-[var(--shadow-sm)] transition-all uppercase tracking-tight"
+            className="w-full h-14 md:h-16 bg-[var(--background-card)] border border-[var(--border-subtle)] pl-12 md:pl-16 pr-6 text-sm font-bold text-[var(--text-primary)] placeholder:text-[var(--text-muted)] rounded-[20px] md:rounded-[24px] focus:outline-none focus:ring-4 focus:ring-orange-50 focus:border-[var(--accent-orange)] shadow-[var(--shadow-sm)] transition-all uppercase tracking-tight"
           />
         </div>
         
-        <div className="flex items-center gap-2 p-2 bg-[var(--background-secondary)] border border-[var(--border-subtle)] rounded-[28px] shadow-inner">
+        <div className="flex items-center gap-1 p-1.5 md:p-2 bg-[var(--background-secondary)] border border-[var(--border-subtle)] rounded-[24px] md:rounded-[28px] shadow-inner w-full md:w-auto overflow-x-auto no-scrollbar">
           <Button
             onClick={() => setFilter('all')}
             variant="ghost"
             className={cn(
-               "h-12 px-8 rounded-[22px] text-[11px] font-bold uppercase tracking-widest transition-all",
+               "h-10 md:h-12 px-4 md:px-8 rounded-[18px] md:rounded-[22px] text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap",
                filter === 'all' ? "bg-white text-[var(--text-primary)] shadow-[var(--shadow-md)] border border-[var(--border-subtle)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
-            <Globe className={cn("w-4 h-4 mr-2", filter === 'all' ? "text-[var(--accent-orange)]" : "text-[var(--text-muted)]")} strokeWidth={2.5} />
+            <Globe className={cn("w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2", filter === 'all' ? "text-[var(--accent-orange)]" : "text-[var(--text-muted)]")} strokeWidth={2.5} />
             All Nodes
           </Button>
           <Button
              onClick={() => setFilter('agentbazaar')}
              variant="ghost"
              className={cn(
-                 "h-12 px-8 rounded-[22px] text-[11px] font-bold uppercase tracking-widest transition-all",
+                 "h-10 md:h-12 px-4 md:px-8 rounded-[18px] md:rounded-[22px] text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap",
                  filter === 'agentbazaar' ? "bg-white text-[var(--text-primary)] shadow-[var(--shadow-md)] border border-[var(--border-subtle)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
              )}
           >
-            <Cpu className={cn("w-4 h-4 mr-2", filter === 'agentbazaar' ? "text-[var(--accent-orange)]" : "text-[var(--text-muted)]")} strokeWidth={2.5} />
+            <Cpu className={cn("w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2", filter === 'agentbazaar' ? "text-[var(--accent-orange)]" : "text-[var(--text-muted)]")} strokeWidth={2.5} />
             Official
           </Button>
           <Button
             onClick={() => setFilter('community')}
             variant="ghost"
             className={cn(
-               "h-12 px-8 rounded-[22px] text-[11px] font-bold uppercase tracking-widest transition-all",
+               "h-10 md:h-12 px-4 md:px-8 rounded-[18px] md:rounded-[22px] text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap",
                filter === 'community' ? "bg-white text-[var(--text-primary)] shadow-[var(--shadow-md)] border border-[var(--border-subtle)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
-            <Users className={cn("w-4 h-4 mr-2", filter === 'community' ? "text-[var(--accent-orange)]" : "text-[var(--text-muted)]")} strokeWidth={2.5} />
+            <Users className={cn("w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2", filter === 'community' ? "text-[var(--accent-orange)]" : "text-[var(--text-muted)]")} strokeWidth={2.5} />
             Community
           </Button>
         </div>
       </div>
 
       {/* Grid Layout */}
-      <div className="mb-12 flex items-center justify-between">
+      <div className="mb-8 md:mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] uppercase tracking-tighter">
+            <h2 className="text-lg md:text-xl font-bold text-[var(--text-primary)] uppercase tracking-tighter">
             {filter === 'all' && 'Available Intelligence'}
             {filter === 'agentbazaar' && 'Verified Registry'}
             {filter === 'community' && 'Community Core'}
             </h2>
-            <div className="h-px w-20 bg-[var(--border-subtle)]" />
+            <div className="hidden sm:block h-px w-10 md:w-20 bg-[var(--border-subtle)]" />
         </div>
-        <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Showing {filteredAgents.length} Active Nodes</p>
+        <p className="text-[10px] md:text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Showing {filteredAgents.length} Active Nodes</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -253,16 +253,16 @@ export default function Marketplace() {
 
       {/* Empty State */}
       {filteredAgents.length === 0 && (
-        <Card variant="accent" className="p-24 text-center rounded-[48px] shadow-sm flex flex-col items-center max-w-2xl mx-auto">
-          <div className="w-24 h-24 rounded-[32px] bg-[var(--background-secondary)] border border-[var(--border-subtle)] flex items-center justify-center mb-10 shadow-sm">
-            <Filter className="w-10 h-10 text-[var(--text-muted)]" strokeWidth={1.5} />
+        <Card variant="accent" className="p-10 md:p-24 text-center rounded-[32px] md:rounded-[48px] shadow-sm flex flex-col items-center max-w-2xl mx-auto">
+          <div className="w-16 h-16 md:w-24 md:h-24 rounded-[24px] md:rounded-[32px] bg-[var(--background-secondary)] border border-[var(--border-subtle)] flex items-center justify-center mb-6 md:mb-10 shadow-sm">
+            <Filter className="w-6 h-6 md:w-10 md:h-10 text-[var(--text-muted)]" strokeWidth={1.5} />
           </div>
-          <h3 className="text-3xl font-bold text-[var(--text-primary)] uppercase tracking-tight mb-4">No Nodes Detected</h3>
-          <p className="text-lg font-semibold text-[var(--text-secondary)] opacity-80 mb-10 leading-relaxed">No autonomous units match your current search parameters in our decentralized registry.</p>
+          <h3 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] uppercase tracking-tight mb-4">No Nodes Detected</h3>
+          <p className="text-base md:text-lg font-semibold text-[var(--text-secondary)] opacity-80 mb-8 md:mb-10 leading-relaxed">No autonomous units match your current search parameters in our decentralized registry.</p>
           <Button 
             variant="outline" 
             onClick={() => { setSearchQuery(''); setFilter('all'); }}
-            className="h-14 px-12 rounded-[22px] border-[var(--border-subtle)] text-[var(--text-primary)] font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-[var(--background-hover)] transition-all hover:-translate-y-1"
+            className="h-12 md:h-14 px-8 md:px-12 rounded-[18px] md:rounded-[22px] border-[var(--border-subtle)] text-[var(--text-primary)] font-bold text-[10px] md:text-[11px] uppercase tracking-[0.2em] hover:bg-[var(--background-hover)] transition-all hover:-translate-y-1"
           >
             Reset Filters
           </Button>
