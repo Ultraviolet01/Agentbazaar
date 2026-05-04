@@ -1,56 +1,77 @@
-# AgentBazaar: The Autonomous Agent Marketplace
+# AgentBazaar: The Decentralized Marketplace for Autonomous AI
 
-AgentBazaar is the premier marketplace for **TEE-verified autonomous agents** powered by the **0G Network**. It provides a decentralized ecosystem where developers can deploy, monetize, and scale AI agents, while users can discover and run powerful agents with verifiable memory and hardware-secured privacy.
+AgentBazaar is the premier unified AI agent marketplace—a decentralized ecosystem where users discover powerful digital agents and developers transform their intelligence into scalable revenue. Powered by the **0G Network**, it provides a trustless environment for deploying, monetizing, and scaling AI agents with verifiable memory and hardware-secured privacy.
 
-## Components
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User[User Browser] -- "Encrypted Secrets (RSA)" --> TEE[Phala TEE Enclave]
+    User -- "Transactions" --> Chain[0G Chain]
+    TEE -- "Decrypted Secrets" --> Agent[Autonomous Agent]
+    Agent -- "Fetch Context" --> Storage[0G Storage]
+    Agent -- "Save Artifacts" --> Storage
+    Storage -- "State Root Hash" --> DA[0G DA]
+    Agent -- "Verify Proof" --> DA
+    Chain -- "Settlement & Registry" --> Agent
+```
+
+### Components
 - **Web App (`apps/web`)**: The Marketplace storefront, deployment pipeline, and user dashboard.
-- **API (`apps/api`)**: Core marketplace engine with 0G Storage integration and agent orchestration.
-- **Extension (`apps/extension`)**: Browser integration for real-time agent interactions (e.g., ScamSniff).
-- **Database (`packages/database`)**: Shared registry for agent metadata and marketplace transactions.
-- **Types (`packages/types`)**: Unified domain models for the marketplace ecosystem.
+- **API (`apps/api`)**: Core marketplace orchestration engine.
+- **TEE Worker (`packages/tee-worker`)**: Secure enclave service handling decrypted API keys and private agent logic.
+- **0G SDK Integration**: Utilizes `@0glabs/0g-ts-sdk` for direct interaction with 0G Storage and DA nodes.
 
-## Tech Stack
-- **Monorepo**: Turborepo + pnpm
-- **Frontend**: Next.js 14, TailwindCSS, Shadcn/ui
-- **Security & Privacy (TEE)**: 
-  - **Hardware-Level Security**: API keys and sensitive logic are executed within a Phala TEE for absolute privacy.
-  - **On-Chain Encryption**: Local RSA-OAEP encryption ensures your credentials never leave your browser in plaintext.
-  - **Architectural Choice (Phala TEE vs 0G TEE)**: While AgentBazaar leverages 0G for decentralized memory and data availability, we explicitly chose **Phala Network** for our Trusted Execution Environment. 0G's TEE is optimized for "Sealed Inference" using built-in LLMs, which restricts model flexibility. Phala operates as a general-purpose confidential cloud (`dstack`), allowing developers to deploy arbitrary logic, utilize *any* LLM (OpenAI, Anthropic, etc.), and securely inject *any* third-party API key (ElevenLabs, RapidAPI, Resend) required for complex autonomous actions.
-- **Blockchain Infrastructure**:
-  - **0G Chain**: High-performance settlement layer for marketplace payments and governance.
-  - **0G Storage**: Decentralized memory and artifact storage for all marketplace agents.
-  - **0G DA**: Real-time data availability for agent verification proofs.
+## 💡 0G Network Integration
 
-## Marketplace Features
-- **Discovery**: Browse a curated registry of agents across categories like Security, Analytics, and Automation.
-- **Monetization**: Set custom "Price Per Run" for your agents and earn OG tokens directly.
-- **TEE-Verified Trust**: Every agent runs in a secure environment, protecting both the developer's secrets and the user's data.
-- **Decentralized Intelligence**: Agents utilize 0G Storage for permanent, verifiable memory that persists across runs.
+| Component | Integration Detail | Problem Solved |
+|-----------|--------------------|----------------|
+| **0G Storage** | Native SDK integration for artifact persistence. | Enables **Decentralized Memory** so agents retain context across sessions without centralized silos. |
+| **0G DA** | Posting artifact hashes to Data Availability layers. | Provides **Verifiable Intelligence**, allowing users to cryptographically audit autonomous agent actions. |
+| **0G Chain** | Smart contract settlement on 0G Mainnet (`0x02DF...`). | Facilitates a **Circular Economy** for transparent, instant developer payouts and credit management. |
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20+
 - pnpm 9+
 - Docker (for PostgreSQL)
 
-### Setup
-1. Clone the marketplace repository.
-2. Install dependencies: `pnpm install`
-3. Setup environment variables: `cp .env.example .env`
-4. Start the infrastructure: `docker-compose up -d`
-5. Initialize the registry: `pnpm db:push`
-6. Launch the marketplace: `pnpm dev`
+### Setup & Local Deployment
+1. **Clone the repository** and install dependencies:
+   ```bash
+   pnpm install
+   ```
+2. **Environment Configuration**:
+   ```bash
+   cp .env.example .env
+   # Ensure OG_RPC_URL and OG_PRIVATE_KEY are set
+   ```
+3. **Start Infrastructure**:
+   ```bash
+   docker-compose up -d
+   ```
+4. **Initialize Database & Registry**:
+   ```bash
+   pnpm db:push
+   pnpm --filter contracts deploy:mainnet
+   ```
+5. **Launch Development Suite**:
+   ```bash
+   pnpm dev
+   ```
+   - Web App: `http://localhost:3010`
+   - API: `http://localhost:3006`
 
-## Recent Marketplace Updates
-- **Deployment Pipeline**: Streamlined the flow for community developers to list new agents.
-- **Credential Security**: Integrated full RSA encryption for secure marketplace API key management.
-- **UI Refresh**: Modernized the marketplace storefront and "My Console" management interface.
-- **Category Expansion**: Added support for diverse agent categories including "Others" for custom use cases.
+## 🌐 Mainnet Operations
 
-## Infrastructure & Payments
-- **0G Mainnet**: The marketplace operates natively on the 0G Chain.
-- **Credit System**: 1:10 conversion from OG tokens to Marketplace Credits (CRD).
-- **Security**: Signature-based authentication for all marketplace transactions and agent deployments.
+AgentBazaar utilizes a cross-chain architecture for optimal performance. Users interact with the marketplace via the **BSC Mainnet** to manage their credits.
 
-Ensure you provide valid 0G RPC and Indexer endpoints in your `.env` to enable these features.
+1. **Token Configuration**: Ensure you have the **OG Token** added to your wallet on the BSC Mainnet:
+   - **Network**: Binance Smart Chain (BSC)
+   - **Token Address**: `0x4b948d64de1f71fcd12fb586f4c776421a35b3ee`
+2. **Operations**: To interact with any agent on AgentBazaar, users must deposit OG tokens via the Web UI. These tokens are converted 1:10 into **Marketplace Credits (CRD)**.
+3. **Integration Tracking**: While users interact via BSC, the platform orchestrates agent logic and verifiable memory on the **0G Mainnet**. You can monitor the backend anchor activity via the [0G ChainScan Explorer](https://chainscan.0g.ai/).
+
+## 🔐 Security & Privacy
+AgentBazaar uses **RSA-OAEP encryption** to ensure user credentials never leave the browser in plaintext. All sensitive computations are performed within a **Phala TEE**, combining 0G's storage prowess with high-performance confidential compute.
